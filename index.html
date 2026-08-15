@@ -34,38 +34,44 @@
       SS_WAGE_BASE: 184500,
       MILEAGE_RATE: 0.67,
       SURTAX_THRESHOLDS: { single: 200000, married: 250000 },
-      STANDARD_DEDUCTIONS: { single: 15000, married: 30000 },
+      STANDARD_DEDUCTIONS: { single: 16100, married: 32200 },
       FEDERAL_BRACKETS: {
         single: [
-          { start: 609350, rate: 0.37 }, { start: 243725, rate: 0.35 },
-          { start: 191950, rate: 0.32 }, { start: 100525, rate: 0.24 },
-          { start: 47150, rate: 0.22 }, { start: 11600, rate: 0.12 }, { start: 0, rate: 0.10 },
+          { start: 640600, rate: 0.37 }, { start: 256225, rate: 0.35 },
+          { start: 201775, rate: 0.32 }, { start: 105700, rate: 0.24 },
+          { start: 50400, rate: 0.22 }, { start: 12400, rate: 0.12 }, { start: 0, rate: 0.10 },
         ],
         married: [
-          { start: 731200, rate: 0.37 }, { start: 487450, rate: 0.35 },
-          { start: 383900, rate: 0.32 }, { start: 201050, rate: 0.24 },
-          { start: 94300, rate: 0.22 }, { start: 23200, rate: 0.12 }, { start: 0, rate: 0.10 },
+          { start: 768700, rate: 0.37 }, { start: 512450, rate: 0.35 },
+          { start: 403550, rate: 0.32 }, { start: 211400, rate: 0.24 },
+          { start: 100800, rate: 0.22 }, { start: 24800, rate: 0.12 }, { start: 0, rate: 0.10 },
         ],
       },
     };
 
     function calculateTaxes(inputs) {
+      const num = (val) => Number(val) || 0;
       const d = inputs.deductions;
-      const mileageDeduction = d.mileage * TAX_CONFIG.MILEAGE_RATE;
+      const mileageDeduction = num(d.mileage) * TAX_CONFIG.MILEAGE_RATE;
       const deductionsSum =
-        d.certs + d.liabilityIns + d.gymRent + d.equipment +
-        d.software + mileageDeduction + d.apparel + d.marketing +
-        d.homeOffice + d.other;
+        num(d.certs) + num(d.liabilityIns) + num(d.gymRent) + num(d.equipment) +
+        num(d.software) + mileageDeduction + num(d.apparel) + num(d.marketing) +
+        num(d.homeOffice) + num(d.other);
 
-      const netSeProfit = Math.max(0, inputs.gross1099 - deductionsSum);
+      const gross1099 = num(inputs.gross1099);
+      const w2Wages = num(inputs.w2Wages);
+      const w2Withheld = num(inputs.w2Withheld);
+
+      const isLoss = deductionsSum > gross1099;
+      const netSeProfit = Math.max(0, gross1099 - deductionsSum);
       const seTaxableIncome = netSeProfit * 0.9235;
 
-      const wageBaseRemaining = Math.max(0, TAX_CONFIG.SS_WAGE_BASE - inputs.w2Wages);
+      const wageBaseRemaining = Math.max(0, TAX_CONFIG.SS_WAGE_BASE - w2Wages);
       const ssTax = Math.min(seTaxableIncome, wageBaseRemaining) * 0.124;
       const medicareTax = seTaxableIncome * 0.029;
 
       const surtaxThreshold = TAX_CONFIG.SURTAX_THRESHOLDS[inputs.filingStatus];
-      const combinedIncome = inputs.w2Wages + seTaxableIncome;
+      const combinedIncome = w2Wages + seTaxableIncome;
       const amountOverThreshold = Math.max(0, combinedIncome - surtaxThreshold);
       const surtax = amountOverThreshold * 0.009;
 
@@ -78,7 +84,7 @@
       const standardDeduction = TAX_CONFIG.STANDARD_DEDUCTIONS[inputs.filingStatus];
       const taxableIncome = Math.max(
         0,
-        inputs.w2Wages + netSeProfit - halfSeTax - qbiDeduction - standardDeduction
+        w2Wages + netSeProfit - halfSeTax - qbiDeduction - standardDeduction
       );
 
       const brackets = TAX_CONFIG.FEDERAL_BRACKETS[inputs.filingStatus];
@@ -94,7 +100,7 @@
       }
 
       const totalLiability = federalTax + totalSeTax;
-      const amountOwed = Math.max(0, totalLiability - inputs.w2Withheld);
+      const amountOwed = Math.max(0, totalLiability - w2Withheld);
       const quarterly = amountOwed / 4.0;
 
       return {
@@ -109,6 +115,7 @@
         totalLiability: totalLiability,
         amountOwed: amountOwed,
         quarterlyPayment: quarterly,
+        isLoss: isLoss,
       };
     }
 
@@ -145,17 +152,40 @@
     }
 
     function Calculator() {
-      const [inputs, setInputs] = useState({
-        filingStatus: "single", w2Wages: 0, w2Withheld: 0, gross1099: 0,
+      const resultsRef = React.useRef(null);
+      const initialInputs = {
+        filingStatus: "single", w2Wages: "", w2Withheld: "", gross1099: "",
         deductions: {
-          certs: 0, liabilityIns: 0, gymRent: 0, equipment: 0, software: 0,
-          mileage: 0, apparel: 0, marketing: 0, homeOffice: 0, other: 0,
+          certs: "", liabilityIns: "", gymRent: "", equipment: "", software: "",
+          mileage: "", apparel: "", marketing: "", homeOffice: "", other: "",
         },
-      });
+      };
+      const [inputs, setInputs] = useState(initialInputs);
 
       const sanitizeNumber = (val) => {
-        const num = Number(val);
-        return isNaN(num) || num < 0 ? 0 : num;
+        if (val === "") return "";
+        const stringVal = String(val);
+        if (stringVal.includes("-")) return stringVal.replace(/-/g, "");
+        return stringVal;
+      };
+
+      const handleCalculate = () => {
+        if (resultsRef.current) {
+          resultsRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+      };
+
+      const handleReset = () => {
+        if (window.confirm("Are you sure you want to clear all fields?")) {
+          setInputs(initialInputs);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      };
+
+      const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+          handleCalculate();
+        }
       };
 
       const handleInputChange = (field, value) => {
@@ -184,7 +214,7 @@
           </div>
 
           <div className="w-full max-w-4xl grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-7 space-y-8 bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100">
+            <div className="lg:col-span-7 space-y-8 bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100" onKeyDown={handleKeyDown}>
               <section>
                 <h2 className="text-xl font-bold text-gray-900 mb-4">1. The Basics</h2>
                 <div>
@@ -231,11 +261,34 @@
                   <DeductionInput label="Business Mileage" hint="Miles driven" value={inputs.deductions.mileage} onChange={(v) => handleDeductionChange("mileage", v)} prefix="miles" />
                 </div>
               </section>
+
+              <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-100">
+                <button 
+                  onClick={handleCalculate}
+                  className="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 px-6 rounded-xl shadow-md transition-colors text-lg"
+                >
+                  Calculate
+                </button>
+                <button 
+                  onClick={handleReset}
+                  className="sm:w-auto px-6 py-3 bg-white border-2 border-gray-200 hover:border-gray-300 text-gray-700 font-semibold rounded-xl transition-colors"
+                >
+                  Reset
+                </button>
+              </div>
             </div>
 
-            <div className="lg:col-span-5 relative">
+            <div className="lg:col-span-5 relative" ref={resultsRef}>
               <div className="sticky top-6 bg-dark text-white p-6 sm:p-8 rounded-2xl shadow-xl flex flex-col">
                 <h2 className="text-xl font-bold mb-6 text-brand-100 border-b border-gray-700 pb-3">Your Tax Estimate</h2>
+                
+                {results.isLoss && (
+                  <div className="mb-6 p-4 bg-amber-500/20 border border-amber-500/50 rounded-lg">
+                    <p className="text-amber-200 text-sm leading-relaxed">
+                      Your deductible expenses exceed your training income this year — this usually means a business loss. This calculator doesn't handle loss carryforwards; consider talking to a tax professional.
+                    </p>
+                  </div>
+                )}
                 
                 <div className="space-y-4 flex-grow">
                   <ResultRow label="Net SE Profit" value={results.netSeProfit} highlight />
