@@ -120,30 +120,35 @@ export default function Calculator() {
               hint="NASM, ACE, renewals. Typical: $200-$800/yr"
               value={inputs.deductions.certs}
               onChange={(v) => handleDeductionChange("certs", v)}
+              tooltipText="Professional certifications, continuing education, and training expenses may qualify when they are related to maintaining or improving your current business skills. Eligibility depends on your situation."
             />
             <DeductionInput
               label="Liability Insurance"
               hint="Most trainers pay $150-$300/year"
               value={inputs.deductions.liabilityIns}
               onChange={(v) => handleDeductionChange("liabilityIns", v)}
+              tooltipText="Business liability insurance used to protect your training business may generally qualify as a business expense."
             />
             <DeductionInput
               label="Gym Rental / Revenue Split"
               hint="Booth fees or % paid to the studio"
               value={inputs.deductions.gymRent}
               onChange={(v) => handleDeductionChange("gymRent", v)}
+              tooltipText="Include the portion of gym or studio rental costs you pay to operate your training business."
             />
             <DeductionInput
               label="Equipment"
               hint="Weights, bands, wearables for client use"
               value={inputs.deductions.equipment}
               onChange={(v) => handleDeductionChange("equipment", v)}
+              tooltipText="Business-use equipment such as weights, resistance bands, mats, or other training gear may qualify. Keep records showing business use."
             />
             <DeductionInput
               label="Coaching Software & Apps"
               hint="Trainerize, TrueCoach, Zoom, payment fees"
               value={inputs.deductions.software}
               onChange={(v) => handleDeductionChange("software", v)}
+              tooltipText="Software used to run or support your training business may qualify, such as scheduling, client-management, programming, or coaching platforms."
             />
             <DeductionInput
               label="Business Mileage"
@@ -151,6 +156,8 @@ export default function Calculator() {
               value={inputs.deductions.mileage}
               onChange={(v) => handleDeductionChange("mileage", v)}
               prefix="miles"
+              tooltipText="Generally, include qualifying business miles such as travel between clients or to off-site training locations. Normal commuting may not qualify."
+              learnMoreLink="/guides/personal-trainer-tax-deductions#mileage"
             />
             <DeductionInput
               label="Branded Apparel"
@@ -250,12 +257,43 @@ export default function Calculator() {
   );
 }
 
-function DeductionInput({ label, hint, value, onChange, prefix = "$" }: { label: string; hint: string; value: number; onChange: (val: number) => void; prefix?: string }) {
+function DeductionInput({ label, hint, value, onChange, prefix = "$", tooltipText, learnMoreLink }: { label: string; hint: string; value: number; onChange: (val: number) => void; prefix?: string; tooltipText?: string; learnMoreLink?: string }) {
+  const [showTooltip, setShowTooltip] = useState(false);
+  
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-white border border-gray-100 rounded-lg shadow-sm hover:border-gray-200 transition-colors">
-      <div className="flex-1">
-        <label className="block text-sm font-semibold text-gray-800">{label}</label>
-        <p className="text-xs text-gray-500 mt-0.5">{hint}</p>
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 bg-white border border-gray-100 rounded-lg shadow-sm hover:border-gray-200 transition-colors relative group">
+      <div className="flex-1 flex items-start">
+        <div className="flex-1">
+          <label className="block text-sm font-semibold text-gray-800">{label}</label>
+          <p className="text-xs text-gray-500 mt-0.5">{hint}</p>
+        </div>
+        {tooltipText && (
+          <div 
+            className="relative ml-2 flex-shrink-0"
+            onMouseEnter={() => setShowTooltip(true)}
+            onMouseLeave={() => setShowTooltip(false)}
+          >
+            <button 
+              type="button" 
+              onClick={() => setShowTooltip(!showTooltip)} 
+              className="text-gray-400 hover:text-brand-600 focus:outline-none focus:text-brand-600 p-1 rounded-full transition-colors"
+              aria-label={`More information about ${label}`}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </button>
+            
+            {showTooltip && (
+              <div className="absolute z-50 w-64 p-3 mt-2 text-sm text-gray-600 bg-white border border-gray-100 rounded-lg shadow-lg right-0 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 transition-opacity animate-in fade-in zoom-in-95 duration-150">
+                <p className="leading-relaxed">{tooltipText}</p>
+                {learnMoreLink && (
+                  <a href={learnMoreLink} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 font-semibold text-brand-600 hover:text-brand-700 hover:underline">
+                    Learn more &rarr;
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <div className="relative w-full sm:w-32 flex-shrink-0">
         {prefix === "$" && <span className="absolute left-3 top-2.5 text-gray-400 font-medium">$</span>}
