@@ -1,0 +1,138 @@
+[
+  {
+    "name": "Scenario A: Low-income pure 1099",
+    "inputs": {
+      "filingStatus": "single",
+      "w2Wages": 0,
+      "w2Withheld": 0,
+      "gross1099": 45000,
+      "deductions": {
+        "certs": 500,
+        "liabilityIns": 200,
+        "gymRent": 3000,
+        "equipment": 800,
+        "software": 300,
+        "mileage": 1000,
+        "apparel": 200,
+        "marketing": 500,
+        "homeOffice": 0,
+        "other": 100
+      }
+    },
+    "output": {
+      "netSeProfit": 38730.0,
+      "seTax": {
+        "socialSecurity": 4435.13,
+        "medicare": 1037.25,
+        "additionalMedicare": 0.0,
+        "total": 5472.37
+      },
+      "federalTax": 1423.41,
+      "totalLiability": 6895.78,
+      "amountOwed": 6895.78,
+      "quarterlyPayment": 1723.95
+    }
+  },
+  {
+    "name": "Scenario B: High-income pure 1099 (Additional Medicare surtax)",
+    "inputs": {
+      "filingStatus": "single",
+      "w2Wages": 0,
+      "w2Withheld": 0,
+      "gross1099": 230000,
+      "deductions": {
+        "certs": 1000,
+        "liabilityIns": 300,
+        "gymRent": 5000,
+        "equipment": 2000,
+        "software": 1000,
+        "mileage": 5000,
+        "apparel": 500,
+        "marketing": 2000,
+        "homeOffice": 1500,
+        "other": 500
+      }
+    },
+    "output": {
+      "netSeProfit": 212850.0,
+      "seTax": {
+        "socialSecurity": 22878.0,
+        "medicare": 5700.44,
+        "additionalMedicare": 0.0,
+        "total": 28578.44
+      },
+      "federalTax": 27566.17,
+      "totalLiability": 56144.61,
+      "amountOwed": 56144.61,
+      "quarterlyPayment": 14036.15
+    }
+  },
+  {
+    "name": "Scenario C: Hybrid W-2 + 1099 (Combined near SS wage base)",
+    "inputs": {
+      "filingStatus": "single",
+      "w2Wages": 160000,
+      "w2Withheld": 30000,
+      "gross1099": 40000,
+      "deductions": {
+        "certs": 800,
+        "liabilityIns": 250,
+        "gymRent": 0,
+        "equipment": 500,
+        "software": 200,
+        "mileage": 0,
+        "apparel": 100,
+        "marketing": 0,
+        "homeOffice": 0,
+        "other": 150
+      }
+    },
+    "output": {
+      "netSeProfit": 38000.0,
+      "seTax": {
+        "socialSecurity": 3038.0,
+        "medicare": 1017.7,
+        "additionalMedicare": 0.0,
+        "total": 4055.7
+      },
+      "federalTax": 34749.15,
+      "totalLiability": 38804.85,
+      "amountOwed": 8804.85,
+      "quarterlyPayment": 2201.21
+    }
+  },
+  {
+    "name": "Scenario D: Married filing jointly (same numbers as A)",
+    "inputs": {
+      "filingStatus": "married",
+      "w2Wages": 0,
+      "w2Withheld": 0,
+      "gross1099": 45000,
+      "deductions": {
+        "certs": 500,
+        "liabilityIns": 200,
+        "gymRent": 3000,
+        "equipment": 800,
+        "software": 300,
+        "mileage": 1000,
+        "apparel": 200,
+        "marketing": 500,
+        "homeOffice": 0,
+        "other": 100
+      }
+    },
+    "output": {
+      "netSeProfit": 38730.0,
+      "seTax": {
+        "socialSecurity": 4435.13,
+        "medicare": 1037.25,
+        "additionalMedicare": 0.0,
+        "total": 5472.37
+      },
+      "federalTax": 0,
+      "totalLiability": 5472.37,
+      "amountOwed": 5472.37,
+      "quarterlyPayment": 1368.09
+    }
+  }
+]
