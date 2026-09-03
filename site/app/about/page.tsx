@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function About() {
   return (
-    <main className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6">
+    <main className="flex-1 bg-gray-50 py-12 px-4 sm:px-6">
       <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
         <Link href="/" className="text-brand-600 hover:underline mb-6 inline-block">&larr; Back to Calculator</Link>
         

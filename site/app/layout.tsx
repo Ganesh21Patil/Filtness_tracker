@@ -1,5 +1,14 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import { Manrope } from "next/font/google";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+
+const manrope = Manrope({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Fitness Coach Tax Calculator | Estimate 1099 & W-2 Taxes",
@@ -12,8 +21,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" className={manrope.variable}>
+      <body className="flex min-h-screen flex-col">
+        <Header />
+        <div className="flex flex-1 flex-col">{children}</div>
+        <Footer />
+      </body>
     </html>
   );
 }
