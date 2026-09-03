@@ -1,0 +1,15 @@
+# dependencies
+/site/node_modules
+
+# next.js
+/site/.next/
+/site/out/
+
+# typescript
+/site/next-env.d.ts
+
+# local tooling
+.claude/
+
+# misc
+.DS_Store

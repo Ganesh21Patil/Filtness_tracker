@@ -19,6 +19,9 @@ const config: Config = {
         },
         dark: '#111827',
       },
+      fontFamily: {
+        sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
     },
   },
   plugins: [],
