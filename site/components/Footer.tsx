@@ -28,7 +28,7 @@ export default function Footer() {
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight text-white">
+            <Link href="/" className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight text-white rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400">
               <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-brand-500 text-dark">
                 <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
@@ -47,7 +47,7 @@ export default function Footer() {
               <ul className="space-y-3">
                 {col.links.map((link) => (
                   <li key={link.href}>
-                    <Link href={link.href} className="text-sm text-gray-400 transition-colors hover:text-white">
+                    <Link href={link.href} className="inline-block rounded text-sm text-gray-400 transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400">
                       {link.label}
                     </Link>
                   </li>

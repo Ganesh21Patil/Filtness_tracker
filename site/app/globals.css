@@ -10,3 +10,27 @@
     @apply bg-gray-50 text-dark antialiased font-sans;
   }
 }
+
+@layer utilities {
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Brief replay of a value-update pop whenever a keyed metric node remounts.
+   Gated entirely inside the media query so it's a no-op under reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes value-pop {
+    0% {
+      opacity: 0.5;
+      transform: translateY(3px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .value-pop {
+    animation: value-pop 220ms ease-out;
+  }
+}
