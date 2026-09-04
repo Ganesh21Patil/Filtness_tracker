@@ -25,7 +25,7 @@ export default function QuarterlyCalculatorPage() {
 
       <section className="bg-ink px-6 py-16 lg:px-12">
         <div className="mx-auto max-w-3xl">
-          <Link href="/" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">&larr; Back to calculator</Link>
+          <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">&larr; Back to calculator</Link>
           <h1 className="font-serif text-4xl sm:text-5xl tracking-[-.03em] text-offwhite mb-6">Quarterly tax calculator for personal trainers</h1>
           <p className="text-lg leading-relaxed text-offwhite/80">
             Self-employed trainers generally owe the IRS four times a year, not once. This calculator estimates what you owe each quarter — Apr 15, Jun 15, Sep 15, and Jan 15 — based on your actual income and deductions, using 2026 federal tax figures.

@@ -24,6 +24,17 @@
   }
 }
 
+/* Used via Tailwind's motion-safe:animate-[fade-in_...] so it's automatically
+   a no-op under prefers-reduced-motion — no extra gating needed here. */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* Brief replay of a value-update pop whenever a keyed metric node remounts.
    Gated entirely inside the media query so it's a no-op under reduced motion. */
 @media (prefers-reduced-motion: no-preference) {

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { calculateTaxes, estimateMarginalRate, TaxInputs, FilingStatus, TAX_CONFIG } from "../lib/calculator";
+import SaveEstimateButton from "./SaveEstimateButton";
 
 const inputBaseClass =
   "w-full rounded-xl border border-[#e2deeb] bg-white p-4 min-h-[44px] text-[17px] font-medium text-inktext transition-colors focus:outline-none focus:border-accent-deep focus:ring-2 focus:ring-accent-deep/15";
@@ -463,6 +464,8 @@ END:VCALENDAR`;
                   Print / save as PDF
                 </button>
               </div>
+
+              <SaveEstimateButton inputs={inputs} results={results} />
 
               <div className="mt-8 space-y-3.5 border-y border-white/15 py-6 text-sm">
                 <ResultRow label="Net self-employment profit" value={results.netSeProfit} />

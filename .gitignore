@@ -9,6 +9,9 @@
 /site/next-env.d.ts
 /site/tsconfig.tsbuildinfo
 
+# local env (Phase 2 Supabase keys — never commit real credentials)
+/site/.env*.local
+
 # local tooling
 .claude/
 

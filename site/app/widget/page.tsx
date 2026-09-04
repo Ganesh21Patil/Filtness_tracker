@@ -11,7 +11,7 @@ export default function Widget() {
   return (
     <main className="flex-1 bg-ink py-16 px-4 sm:px-6">
       <div className="mx-auto max-w-3xl">
-        <Link href="/" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">&larr; Back to calculator</Link>
+        <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">&larr; Back to calculator</Link>
 
         <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-light">For site owners</p>
         <h1 className="mt-4 font-serif text-4xl sm:text-5xl tracking-[-.03em] text-offwhite mb-6">Embed this calculator on your site</h1>

@@ -10,12 +10,12 @@ export default function Terms() {
   return (
     <main className="flex-1 bg-ink py-16 px-4 sm:px-6">
       <div className="max-w-3xl mx-auto bg-cream text-inktext p-6 sm:p-10 rounded-[28px] shadow-[0_18px_50px_rgba(31,25,74,.1)]">
-        <Link href="/" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">&larr; Back to calculator</Link>
+        <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">&larr; Back to calculator</Link>
 
         <h1 className="font-serif text-4xl sm:text-5xl tracking-[-.03em] mb-6">Terms &amp; disclaimer</h1>
 
         <div className="space-y-6 text-[#413d57] leading-relaxed">
-          <div>
+          <div id="disclaimer" className="scroll-mt-24">
             <h2 className="font-serif text-2xl text-inktext mb-3">Not tax or legal advice</h2>
             <p>TrainerLedger is a free planning tool, not a substitute for professional advice. The estimates it produces are based on general 2026 federal tax rules and simplified assumptions — they don&apos;t account for every deduction, credit, state tax, or individual circumstance that might apply to you. Before filing a return or making an estimated tax payment, consult a certified public accountant (CPA) or enrolled agent (EA), particularly if you have a complex business structure, multiple income sources, or high income that may trigger additional rules.</p>
           </div>

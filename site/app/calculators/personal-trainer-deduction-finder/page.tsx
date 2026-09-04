@@ -25,7 +25,7 @@ export default function DeductionFinderPage() {
 
       <section className="bg-ink px-6 py-16 lg:px-12">
         <div className="mx-auto max-w-3xl">
-          <Link href="/" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">&larr; Back to calculator</Link>
+          <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">&larr; Back to calculator</Link>
           <h1 className="font-serif text-4xl sm:text-5xl tracking-[-.03em] text-offwhite mb-6">Personal trainer deduction finder</h1>
           <p className="text-lg leading-relaxed text-offwhite/80">
             Certifications, liability insurance, gym rental splits, mileage, equipment, coaching software — most trainers miss at least one of these on their taxes. Walk through each category below and see roughly how much each one is worth in tax savings as you go.
