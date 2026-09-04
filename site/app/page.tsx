@@ -1,200 +1,172 @@
-import Calculator from "../components/Calculator";
 import Link from "next/link";
-import Image from "next/image";
+import Calculator from "../components/Calculator";
+import { calculateTaxes } from "../lib/calculator";
 
-const ctaClass =
-  "inline-flex items-center justify-center rounded-full bg-brand-500 hover:bg-brand-600 text-dark font-bold px-8 py-3.5 text-base shadow-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 focus-visible:ring-offset-2";
-const linkClass =
-  "text-brand-600 font-semibold hover:text-brand-700 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 rounded";
+const heroImage = "https://images.unsplash.com/photo-1614367674345-f414b2be3e5b?auto=format&fit=crop&w=1600&h=1900&q=85";
+
+const guides = [
+  ["01", "What counts as a business expense?", "Understand the line between personal spending and expenses connected to running your training business.", "/guides/personal-trainer-tax-deductions"],
+  ["02", "Business mileage, explained", "Learn which drives may qualify and why accurate records matter.", "/guides/personal-trainer-tax-deductions#mileage"],
+  ["03", "1099 trainer taxes, untangled", "See the difference between your business income, expenses, and tax liability.", "/guides/1099-vs-w2-personal-trainers"],
+] as const;
+
+function Spark({ className = "" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 72 72" fill="none">
+      <path d="M36 0c2.8 24.8 11.2 33.2 36 36-24.8 2.8-33.2 11.2-36 36-2.8-24.8-11.2-33.2-36-36C24.8 33.2 33.2 24.8 36 0Z" fill="currentColor" />
+    </svg>
+  );
+}
 
 export default function Home() {
-  return (
-    <main className="flex-1">
-      <div id="calculator-top"></div>
+  // Illustrative example for the hero's floating stat card, computed with the
+  // real tax engine (not a fabricated number) using representative sample inputs.
+  const heroPreview = calculateTaxes({
+    filingStatus: "single",
+    w2Wages: 0,
+    w2Withheld: 0,
+    gross1099: 85000,
+    deductions: { certs: 0, liabilityIns: 0, gymRent: 0, equipment: 0, software: 0, mileage: 0, apparel: 0, marketing: 0, homeOffice: 0, other: 0 },
+  });
+  const money = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 
+  return (
+    <main className="flex-1 overflow-hidden">
       {/* HERO */}
-      <section className="bg-gray-50 py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-extrabold text-dark tracking-tight mb-6 leading-tight">
-            Estimate your personal trainer taxes in 60 seconds
+      <section id="top" className="relative mx-auto grid min-h-[720px] max-w-[1440px] items-center px-6 pb-16 pt-10 lg:grid-cols-[1.1fr_.9fr] lg:px-12">
+        <div className="pointer-events-none absolute left-[8%] top-20 size-[500px] rounded-full bg-violet/30 blur-[130px]" />
+        <div className="pointer-events-none absolute bottom-0 right-[10%] size-80 rounded-full bg-accent/15 blur-[110px]" />
+
+        <div className="relative z-10 max-w-3xl">
+          <p className="mb-8 text-xs font-semibold uppercase tracking-[.2em] text-accent-light">Tax clarity for trainers who do more</p>
+          <h1 className="font-serif text-[clamp(3.4rem,8.5vw,8.4rem)] leading-[.83] tracking-[-.065em]">
+            Build a business
+            <br />
+            that <i className="text-violet-light font-serif">moves</i>
+            <br />
+            with you.
           </h1>
-          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-            Built for independent trainers, gym contractors, and hybrid coaches. Find the deductions most trainers miss and see exactly what you owe.
+          <p className="mt-8 max-w-md text-lg leading-relaxed text-offwhite/80">
+            A free tax estimate built for independent trainers, gym contractors, and hybrid coaches. Put your income, deductions, and next move in one clear view.
           </p>
-          <a href="#calculator" className={ctaClass}>
-            Start My Estimate
-          </a>
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-gray-500 font-medium">
-            <span className="inline-flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-              Free, no signup required
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-              Updated for 2026 tax rates
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-              Nothing you enter is stored
-            </span>
+          <div className="mt-9 flex flex-wrap gap-3">
+            <a href="#calculator" className="rounded-full bg-accent px-6 py-3.5 font-semibold text-ink transition hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,199,239,.25)]">
+              Calculate my taxes <span className="ml-2">↗</span>
+            </a>
+            <Link href="/guides/personal-trainer-tax-deductions" className="rounded-full border border-white/20 px-6 py-3.5 font-semibold transition hover:bg-white/10">
+              Explore guides
+            </Link>
+          </div>
+        </div>
+
+        <div className="relative mx-auto mt-16 h-[510px] w-full max-w-md lg:mt-0">
+          <div className="animate-float-card absolute -left-10 top-10 z-10 rounded-2xl border border-white/15 bg-panel/90 p-4 backdrop-blur">
+            <p className="text-[10px] uppercase tracking-[.18em] text-offwhite/60">Quarterly reserve</p>
+            <p className="mt-1 text-2xl font-semibold tabular-nums">{money(Math.round(heroPreview.quarterlyPayment))}</p>
+            <div className="mt-2 h-1.5 w-32 overflow-hidden rounded bg-white/15">
+              <div className="h-full w-[72%] rounded bg-accent" />
+            </div>
+          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={heroImage} alt="Personal trainer in a dark gym" className="h-full w-full rounded-[140px_140px_22px_22px] object-cover object-center opacity-90" />
+          <div className="pointer-events-none absolute inset-0 rounded-[140px_140px_22px_22px] bg-gradient-to-t from-ink2/80 via-transparent" />
+          <div className="absolute bottom-7 left-7 right-7 flex items-end justify-between">
+            <p className="text-sm">
+              For every way
+              <br />
+              you coach.
+            </p>
+            <Spark className="animate-spin-slow size-11 text-accent" />
           </div>
         </div>
       </section>
 
-      {/* CALCULATOR — the main event */}
-      <section className="bg-white py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
-        <div id="calculator" className="w-full flex flex-col items-center scroll-mt-24">
+      {/* MARQUEE */}
+      <section className="border-y border-white/10 bg-ink2 py-5">
+        <div className="marquee-track flex whitespace-nowrap text-xl text-offwhite/85">
+          <span>FREE TO USE&nbsp;&nbsp; ✦ &nbsp;&nbsp;TRAINER-SPECIFIC DEDUCTIONS&nbsp;&nbsp; ✦ &nbsp;&nbsp;YOUR NUMBERS STAY YOURS&nbsp;&nbsp; ✦ &nbsp;&nbsp;UPDATED FOR 2026&nbsp;&nbsp; ✦ &nbsp;&nbsp;</span>
+          <span aria-hidden="true">FREE TO USE&nbsp;&nbsp; ✦ &nbsp;&nbsp;TRAINER-SPECIFIC DEDUCTIONS&nbsp;&nbsp; ✦ &nbsp;&nbsp;YOUR NUMBERS STAY YOURS&nbsp;&nbsp; ✦ &nbsp;&nbsp;UPDATED FOR 2026&nbsp;&nbsp; ✦ &nbsp;&nbsp;</span>
+        </div>
+      </section>
+
+      {/* CALCULATOR */}
+      <section id="calculator" className="relative bg-cream px-6 py-24 text-[#17162a] lg:px-12 scroll-mt-10">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-14 grid gap-6 md:grid-cols-[.7fr_1.3fr]">
+            <p className="text-xs font-semibold uppercase tracking-[.18em] text-violet-text">The calculator</p>
+            <h2 className="max-w-3xl font-serif text-4xl leading-[.9] tracking-[-.05em] md:text-6xl">Know what you owe. Keep doing what you love.</h2>
+          </div>
           <Calculator />
         </div>
       </section>
 
-      {/* TRUST / SOCIAL PROOF */}
-      <section className="bg-gray-50 py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-5xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Built for trainers who want to keep more of what they earn.</h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-12">
-            TrainerLedger helps independent personal trainers understand their potential tax liability and identify common business deductions — without the spreadsheet headache.
-          </p>
-
-          {/* Feature / Trust Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 text-left">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 mb-4">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-              </div>
-              <p className="text-base font-bold text-gray-900 mb-1.5">Built specifically for trainers</p>
-              <p className="text-sm text-gray-500">Every deduction category matches how personal trainers and coaches actually run their business.</p>
-            </div>
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 mb-4">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-              </div>
-              <p className="text-base font-bold text-gray-900 mb-1.5">Nothing is stored</p>
-              <p className="text-sm text-gray-500">All calculations run locally in your browser. Your numbers are never saved or transmitted.</p>
-            </div>
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-              <div className="flex-shrink-0 w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 mb-4">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-              </div>
-              <p className="text-base font-bold text-gray-900 mb-1.5">2026 IRS-accurate math</p>
-              <p className="text-sm text-gray-500">Self-employment tax, brackets, and mileage rates reflect current IRS guidance for 2026.</p>
-            </div>
-          </div>
-
-          {/* Customer Story Card */}
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 sm:p-12 text-left flex flex-col md:flex-row items-center gap-8 md:gap-12 mx-auto max-w-4xl hover:shadow-md transition-shadow">
-            <div className="flex-shrink-0 w-32 h-32 sm:w-40 sm:h-40 relative rounded-2xl overflow-hidden shadow-inner">
-              <Image
-                src="/trainer-testimonial.jpg"
-                alt="Marcus R."
-                layout="fill"
-                objectFit="cover"
-              />
-            </div>
-            <div className="flex-1 relative">
-              <svg className="absolute -top-4 -left-6 w-12 h-12 text-gray-100 transform -rotate-180" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" /></svg>
-              <p className="text-xl sm:text-2xl font-medium text-gray-800 leading-relaxed relative z-10">
-                "TrainerLedger made it much easier to understand what I could potentially deduct as a self-employed trainer. I finally had a clearer picture of what I might owe instead of guessing."
-              </p>
-              <div className="mt-6">
-                <p className="font-bold text-gray-900">Marcus R.</p>
-                <p className="text-sm text-gray-500">Independent Personal Trainer · CPT</p>
-                <span className="inline-block mt-2 text-[10px] uppercase tracking-wider font-semibold text-gray-400 bg-gray-50 px-2 py-1 rounded">Illustrative example</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Small Social Proof Row */}
-          <div className="flex flex-wrap justify-center gap-6 sm:gap-12 mt-12 text-gray-500 text-sm font-medium">
-            <div className="flex items-center gap-2"><svg className="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> Common trainer deductions</div>
-            <div className="flex items-center gap-2"><svg className="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> Simple tax estimate</div>
-            <div className="flex items-center gap-2"><svg className="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> Built for self-employed trainers</div>
+      {/* ABOUT */}
+      <section id="about" className="mx-auto grid max-w-[1440px] gap-12 px-6 py-24 lg:grid-cols-2 lg:px-12 scroll-mt-10">
+        <div className="relative min-h-[400px] overflow-hidden rounded-[30px] bg-ink2 lg:min-h-[530px]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/trainer-portrait.png"
+            alt="Personal trainer reviewing a client training plan in a gym"
+            className="h-full w-full scale-[1.03] object-cover object-center opacity-90 contrast-125 brightness-[.72] saturate-[.85] transition duration-700 hover:scale-[1.08]"
+          />
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(145deg,rgba(0,199,239,.26),transparent_38%,rgba(12,12,28,.72)_100%)] mix-blend-screen" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_15%,transparent_15%,rgba(12,12,28,.2)_48%,rgba(12,12,28,.68)_100%)]" />
+          <div className="absolute bottom-7 left-7 max-w-xs rounded-2xl bg-cream p-5 text-[#17162a] shadow-2xl">
+            <Spark className="size-6 text-[#00a9cf]" />
+            <p className="mt-8 font-serif text-2xl leading-none">The numbers are part of the training.</p>
           </div>
         </div>
-      </section>
-
-      {/* EDUCATIONAL TAX HELP */}
-      <section className="bg-white py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Not sure what counts as a business deduction?</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Get a little more context while you complete your estimate. Hover over each category's [?] icon in the calculator to understand what it generally covers.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200 group">
-              <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 mb-4">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">What counts as a business expense?</h3>
-              <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                Understand the difference between personal spending and expenses connected to running your training business.
-              </p>
-              <Link href="/guides/personal-trainer-tax-deductions" className={linkClass + " text-sm"}>Explore deductions &rarr;</Link>
+        <div className="flex flex-col justify-center">
+          <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-light">Built specifically for trainers</p>
+          <h2 className="mt-6 font-serif text-4xl leading-[.9] tracking-[-.05em] md:text-6xl">
+            Your work is personal.
+            <br />
+            <i className="text-violet-lighter font-serif">Your plan</i> should be too.
+          </h2>
+          <p className="mt-8 max-w-lg text-lg leading-relaxed text-offwhite/80">
+            From your first private client to a fully booked practice, TrainerLedger turns messy self-employment tax concepts into a few clear next steps.
+          </p>
+          <div className="mt-10 grid grid-cols-3 gap-4 border-t border-white/15 pt-6 text-sm">
+            <div>
+              <b className="block text-2xl text-accent-light">0</b>
+              <span className="text-offwhite/60">signup required</span>
             </div>
-
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200 group">
-              <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 mb-4">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Business mileage explained</h3>
-              <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                Learn which types of driving may qualify as business mileage and why keeping accurate records matters.
-              </p>
-              <Link href="/guides/personal-trainer-tax-deductions#mileage" className={linkClass + " text-sm"}>Learn about mileage &rarr;</Link>
+            <div>
+              <b className="block text-2xl text-accent-light">100%</b>
+              <span className="text-offwhite/60">local calculations</span>
             </div>
-
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:-translate-y-1 hover:shadow-md transition-all duration-200 group">
-              <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600 mb-4">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">1099 trainer taxes explained</h3>
-              <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                Understand the difference between your business income, expenses, self-employment tax, and federal income tax.
-              </p>
-              <Link href="/guides/personal-trainer-tax-deductions" className={linkClass + " text-sm"}>Read the guide &rarr;</Link>
+            <div>
+              <b className="block text-2xl text-accent-light">2026</b>
+              <span className="text-offwhite/60">tax year rates</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ABOUT / CREDIBILITY + FINAL CTA */}
-      <section className="bg-gray-50 py-16 sm:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-3xl mx-auto text-center bg-white p-8 sm:p-12 rounded-3xl border border-gray-100 shadow-sm mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Why TrainerLedger?</h2>
-          <p className="text-gray-600 mb-6">
-            TrainerLedger is designed to make tax planning easier for independent personal trainers by turning complicated self-employment tax concepts into a simple, understandable experience.
-          </p>
-          <Link href="/about" className={linkClass}>About TrainerLedger &rarr;</Link>
-        </div>
-
-        <div className="w-full max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Know your numbers before tax season.</h2>
-          <p className="text-lg text-gray-600 mb-8 max-w-xl mx-auto">
-            Estimate your potential tax liability and understand the deductions that may apply to your training business.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-            <a href="#calculator-top" className={ctaClass + " w-full sm:w-auto text-lg"}>
-              Calculate My Taxes
-            </a>
-            <Link href="/guides/personal-trainer-tax-deductions" className={linkClass + " mt-2 sm:mt-0"}>
-              Explore the Guides &rarr;
+      {/* GUIDES */}
+      <section id="guides" className="bg-deep2 px-6 py-24 lg:px-12 scroll-mt-10">
+        <div className="mx-auto max-w-7xl">
+          <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-light">The trainer ledger</p>
+          <div className="mt-5 flex flex-wrap items-end justify-between gap-8">
+            <h2 className="font-serif text-4xl leading-[.9] tracking-[-.05em] md:text-6xl">
+              A little more
+              <br />
+              clarity, whenever.
+            </h2>
+            <Link href="/guides/personal-trainer-tax-deductions" className="rounded-full border border-white/30 px-5 py-3 text-sm transition hover:bg-white hover:text-deep2">
+              All guides ↗
             </Link>
           </div>
-        </div>
-      </section>
-
-      {/* Footer Details */}
-      <section className="bg-white border-t border-gray-100 py-10 px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-3xl mx-auto text-center space-y-4">
-          <p className="text-sm text-gray-500">
-            Last updated for the 2026 tax year. <Link href="/about" className="text-brand-600 font-medium hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 rounded">Read our methodology and IRS sources.</Link>
-          </p>
-          <p className="text-xs text-gray-400 max-w-xl mx-auto">
-            Privacy first: No user data is stored or transmitted anywhere. All calculation happens locally in your browser. This tool provides an estimate for planning purposes, not formal tax or legal advice.
-          </p>
+          <div className="mt-14 grid gap-4 md:grid-cols-3">
+            {guides.map(([n, title, body, href]) => (
+              <Link key={n} href={href} className="group block rounded-2xl border border-white/15 p-6 transition hover:-translate-y-2 hover:bg-deep3">
+                <p className="text-sm text-accent-light">{n}</p>
+                <h3 className="mt-16 font-serif text-3xl leading-[.95]">{title}</h3>
+                <p className="mt-4 text-sm leading-relaxed text-offwhite/70">{body}</p>
+                <span className="mt-7 inline-block text-sm text-accent-light transition group-hover:translate-x-2">Read guide →</span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
     </main>
