@@ -1,12 +1,20 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { DM_Sans, DM_Serif_Display } from "next/font/google";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
-const manrope = Manrope({
+const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
+  display: "swap",
+});
+
+const dmSerifDisplay = DM_Serif_Display({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-serif",
   display: "swap",
 });
 
@@ -21,8 +29,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={manrope.variable}>
-      <body className="flex min-h-screen flex-col">
+    <html lang="en" className={`${dmSans.variable} ${dmSerifDisplay.variable}`}>
+      <body className="flex min-h-screen flex-col bg-ink text-offwhite">
         <Header />
         <div className="flex flex-1 flex-col">{children}</div>
         <Footer />

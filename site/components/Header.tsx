@@ -5,86 +5,48 @@ import { useState } from "react";
 
 const navLinks = [
   { href: "/#calculator", label: "Calculator" },
+  { href: "/#deductions", label: "Deductions" },
   { href: "/guides/personal-trainer-tax-deductions", label: "Guides" },
   { href: "/about", label: "About" },
 ];
 
-function LogoMark() {
-  return (
-    <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-brand-500 text-dark">
-      <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-      </svg>
-    </span>
-  );
-}
-
 export default function Header() {
-  const [open, setOpen] = useState(false);
+  const [menu, setMenu] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 bg-dark text-white shadow-md">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="flex items-center gap-2.5 text-lg font-extrabold tracking-tight text-white rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400">
-          <LogoMark />
-          TrainerLedger
-        </Link>
+    <header className="relative z-20 mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 py-6 lg:px-12">
+      <Link href="/" className="flex items-center gap-2 rounded text-xl font-semibold tracking-tight text-offwhite">
+        <span className="grid size-8 place-items-center rounded-full bg-accent text-ink">✦</span>
+        TrainerLedger
+      </Link>
 
-        <nav className="hidden items-center gap-8 text-sm font-medium text-gray-300 md:flex">
-          {navLinks.map((link) => (
-            <Link key={link.href} href={link.href} className="rounded transition-colors hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400">
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
-        <div className="hidden md:block">
-          <Link
-            href="/#calculator"
-            className="inline-flex items-center justify-center rounded-full bg-brand-500 px-5 py-2.5 text-sm font-bold text-dark shadow-sm transition-colors hover:bg-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-offset-2 focus-visible:ring-offset-dark"
-          >
-            Try the Calculator
+      <nav
+        className={`${menu ? "flex" : "hidden"} absolute left-6 right-6 top-20 flex-col gap-5 rounded-2xl border border-white/10 bg-panel p-6 text-sm md:static md:flex md:flex-row md:items-center md:gap-8 md:border-0 md:bg-transparent md:p-0`}
+      >
+        {navLinks.map((link) => (
+          <Link key={link.href} href={link.href} onClick={() => setMenu(false)} className="rounded text-offwhite/90 transition hover:text-offwhite">
+            {link.label}
           </Link>
-        </div>
+        ))}
+      </nav>
 
+      <div className="flex items-center gap-3">
+        <Link
+          href="/#calculator"
+          className="hidden rounded-full bg-offwhite px-5 py-2.5 text-sm font-semibold text-ink transition hover:bg-accent sm:block"
+        >
+          Try the calculator
+        </Link>
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="p-2.5 min-h-[44px] min-w-[44px] text-gray-300 hover:text-white md:hidden rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
           aria-label="Toggle menu"
-          aria-expanded={open}
+          aria-expanded={menu}
+          onClick={() => setMenu((v) => !v)}
+          className="grid size-11 place-items-center rounded-full border border-white/20 text-offwhite md:hidden"
         >
-          <svg className="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            {open ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            )}
-          </svg>
+          ☰
         </button>
       </div>
-
-      {open && (
-        <div className="space-y-1 border-t border-white/10 bg-dark px-4 pb-4 pt-2 md:hidden">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setOpen(false)}
-              className="block min-h-[44px] rounded-lg px-3 py-2.5 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-            >
-              {link.label}
-            </Link>
-          ))}
-          <Link
-            href="/#calculator"
-            onClick={() => setOpen(false)}
-            className="mt-2 block min-h-[44px] rounded-full bg-brand-500 px-4 py-2.5 text-center text-sm font-bold text-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
-          >
-            Try the Calculator
-          </Link>
-        </div>
-      )}
     </header>
   );
 }
