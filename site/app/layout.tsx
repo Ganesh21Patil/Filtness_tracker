@@ -18,9 +18,30 @@ const dmSerifDisplay = DM_Serif_Display({
   display: "swap",
 });
 
+// TODO: swap for the real domain once one is purchased (see Phase 3 of the
+// improvement plan). Every absolute URL below (OG image, canonical links)
+// resolves from this.
+const siteUrl = "https://filtness-tracker.vercel.app";
+
 export const metadata: Metadata = {
-  title: "Fitness Coach Tax Calculator | Estimate 1099 & W-2 Taxes",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: "TrainerLedger | Free Tax Calculator for Personal Trainers",
+    template: "%s",
+  },
   description: "Free tax calculator built specifically for personal trainers and fitness coaches. Estimate your self-employment taxes, find missed deductions, and plan your quarterly payments.",
+  openGraph: {
+    title: "TrainerLedger | Free Tax Calculator for Personal Trainers",
+    description: "Estimate your self-employment taxes, find missed deductions, and plan your quarterly payments — free, no signup.",
+    url: siteUrl,
+    siteName: "TrainerLedger",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "TrainerLedger | Free Tax Calculator for Personal Trainers",
+    description: "Estimate your self-employment taxes, find missed deductions, and plan your quarterly payments — free, no signup.",
+  },
 };
 
 export default function RootLayout({

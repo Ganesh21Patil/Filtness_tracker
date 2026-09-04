@@ -9,7 +9,15 @@ export default function Footer() {
         </Link>
         <p className="mt-3 max-w-xs">A free tax estimate tool for independent personal trainers and fitness coaches.</p>
       </div>
-      <p className="self-end">&copy; {new Date().getFullYear()} TrainerLedger &middot; Privacy first</p>
+      <div className="flex flex-col items-start gap-3 md:items-end md:text-right">
+        <nav className="flex flex-wrap gap-x-4 gap-y-1">
+          <Link href="/guides" className="rounded hover:text-offwhite">Guides</Link>
+          <Link href="/about" className="rounded hover:text-offwhite">About</Link>
+          <Link href="/privacy" className="rounded hover:text-offwhite">Privacy</Link>
+          <Link href="/terms" className="rounded hover:text-offwhite">Terms</Link>
+        </nav>
+        <p>&copy; {new Date().getFullYear()} TrainerLedger &middot; Privacy first</p>
+      </div>
     </footer>
   );
 }

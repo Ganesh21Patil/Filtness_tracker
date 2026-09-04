@@ -42,21 +42,9 @@
   }
 }
 
-/* Decorative motion from the brand design — ticker, floating stat card, spinning
-   spark mark. All gated under reduced motion; each has a static fallback below. */
-.marquee-track {
-  width: max-content;
-}
+/* Decorative motion from the brand design — floating stat card, spinning spark
+   mark. Both gated under reduced motion; each has a static fallback below. */
 @media (prefers-reduced-motion: no-preference) {
-  @keyframes marquee {
-    to {
-      transform: translateX(-50%);
-    }
-  }
-  .marquee-track {
-    animation: marquee 22s linear infinite;
-  }
-
   @keyframes float-card {
     0%,
     100% {

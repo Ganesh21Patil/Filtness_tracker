@@ -4,7 +4,18 @@ import React, { useMemo, useState } from "react";
 import { calculateTaxes, TaxInputs, FilingStatus, TAX_CONFIG } from "../lib/calculator";
 
 const inputBaseClass =
-  "w-full rounded-xl border border-[#e2deeb] bg-white p-4 min-h-[44px] text-[17px] font-medium text-[#17162a] transition-colors focus:outline-none focus:border-violet-focus focus:ring-2 focus:ring-violet-focus/15";
+  "w-full rounded-xl border border-[#e2deeb] bg-white p-4 min-h-[44px] text-[17px] font-medium text-inktext transition-colors focus:outline-none focus:border-accent-deep focus:ring-2 focus:ring-accent-deep/15";
+
+// Flip to true once real ads are wired up.
+const AD_SLOT_ENABLED = false;
+
+function AdSlot() {
+  return (
+    <div className="w-full p-4 border-2 border-dashed border-[#e2deeb] bg-[#faf9f7] text-center rounded-xl flex items-center justify-center min-h-[100px]">
+      <span className="text-[#a29cb3] text-sm font-medium">Advertisement Slot (Future)</span>
+    </div>
+  );
+}
 
 export default function Calculator() {
   const [inputs, setInputs] = useState<TaxInputs>({
@@ -90,7 +101,7 @@ export default function Calculator() {
       <div className="rounded-[28px] bg-white p-6 shadow-[0_18px_50px_rgba(31,25,74,.1)] md:p-9 space-y-9">
         {/* Basic Info */}
         <section>
-          <h2 className="text-lg font-semibold text-[#17162a] mb-4">1. The basics</h2>
+          <h2 className="text-lg font-semibold text-inktext mb-4">1. The basics</h2>
           <div>
             <label htmlFor="filingStatus" className="block text-[13px] font-semibold text-[#413d57] mb-2">
               Filing status
@@ -109,7 +120,7 @@ export default function Calculator() {
 
         {/* W-2 + 1099 income */}
         <section>
-          <h2 className="text-lg font-semibold text-[#17162a] mb-1">2. Your income</h2>
+          <h2 className="text-lg font-semibold text-inktext mb-1">2. Your income</h2>
           <p className="text-sm text-[#66617a] mb-4">If you're an employee at a gym, add your W-2 wages too. If you're 100% independent, leave that at 0.</p>
           <div className="grid gap-5 sm:grid-cols-2">
             <div>
@@ -167,10 +178,10 @@ export default function Calculator() {
         <section id="deductions" className="border-t border-[#e9e6f1] pt-7 scroll-mt-24">
           <div className="flex items-end justify-between gap-4">
             <div>
-              <p className="text-xl font-semibold text-[#17162a]">Did you deduct these?</p>
+              <p className="text-xl font-semibold text-inktext">Did you deduct these?</p>
               <p className="mt-1 text-sm text-[#66617a]">Most trainers miss at least one.</p>
             </div>
-            <p className="text-sm font-semibold text-violet-text whitespace-nowrap">{money(deductionsSum)} found</p>
+            <p className="text-sm font-semibold text-accent-deep whitespace-nowrap">{money(deductionsSum)} found</p>
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -265,15 +276,14 @@ export default function Calculator() {
           </div>
         </section>
 
-        {/* Placeholder Ad Slot (for future AdSense) */}
-        <div className="w-full p-4 border-2 border-dashed border-[#e2deeb] bg-[#faf9f7] text-center rounded-xl flex items-center justify-center min-h-[100px]">
-          <span className="text-[#a29cb3] text-sm font-medium">Advertisement Slot (Future)</span>
-        </div>
+        {/* Ad slot: kept in the codebase for when real ads are wired up, but not
+            rendered — a visible placeholder isn't something a live site should ship. */}
+        {AD_SLOT_ENABLED && <AdSlot />}
       </div>
 
       {/* Results */}
       <aside className="relative overflow-hidden rounded-[28px] bg-deep p-7 text-white md:p-9 lg:sticky lg:top-6">
-        <div className="pointer-events-none absolute -right-20 -top-16 size-64 rounded-full bg-violet-soft/40 blur-3xl" />
+        <div className="pointer-events-none absolute -right-20 -top-16 size-64 rounded-full bg-accent/20 blur-3xl" />
         <div className="relative flex flex-col min-h-[420px]">
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-[.17em] text-accent-light">Your tax estimate</p>
@@ -308,7 +318,7 @@ export default function Calculator() {
 
               <div className="mt-6">
                 <p className="text-[10px] uppercase tracking-[.18em] text-[#a9dff4] font-semibold">Quarterly payment</p>
-                <p key={results.quarterlyPayment} className="value-pop mt-1 text-3xl font-semibold tabular-nums">{money(results.quarterlyPayment)}</p>
+                <p key={results.quarterlyPayment} className="value-pop mt-1 font-serif text-3xl tabular-nums">{money(results.quarterlyPayment)}</p>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs text-[#cac7e6]">
                   <span className="rounded bg-white/10 px-2 py-1">Apr 15</span>
                   <span className="rounded bg-white/10 px-2 py-1">Jun 15</span>
@@ -397,10 +407,10 @@ function DeductionInput({
   const [showTooltip, setShowTooltip] = useState(false);
 
   return (
-    <div className="flex min-h-[84px] items-center justify-between gap-3 rounded-[14px] border border-[#e7e3ee] p-3.5 transition hover:border-violet-lighter hover:-translate-y-0.5 relative group">
+    <div className="flex min-h-[84px] items-center justify-between gap-3 rounded-[14px] border border-[#e7e3ee] p-3.5 transition hover:border-accent-deep/60 hover:-translate-y-0.5 relative group">
       <div className="flex flex-1 items-start gap-2">
         <div className="flex-1">
-          <label htmlFor={id} className="block text-[13px] font-semibold text-[#17162a]">{label}</label>
+          <label htmlFor={id} className="block text-[13px] font-semibold text-inktext">{label}</label>
           <p className="mt-0.5 text-[11px] leading-tight text-[#777287]">{hint}</p>
         </div>
         {tooltipText && (
@@ -412,7 +422,7 @@ function DeductionInput({
             <button
               type="button"
               onClick={() => setShowTooltip(!showTooltip)}
-              className="text-[#a29cb3] hover:text-violet-focus focus:outline-none focus-visible:ring-2 focus-visible:ring-accent p-1.5 rounded-full transition-colors"
+              className="text-[#a29cb3] hover:text-accent-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-accent p-1.5 rounded-full transition-colors"
               aria-label={`More information about ${label}`}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
@@ -422,8 +432,8 @@ function DeductionInput({
               <div className="absolute z-50 w-64 p-3 mt-2 text-sm text-[#413d57] bg-white border border-[#e7e3ee] rounded-lg shadow-lg right-0 sm:left-1/2 sm:right-auto sm:-translate-x-1/2">
                 <p className="leading-relaxed">{tooltipText}</p>
                 {learnMoreLink && (
-                  <a href={learnMoreLink} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 font-semibold text-violet-focus hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
-                    Learn more &rarr;
+                  <a href={learnMoreLink} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 font-semibold text-accent-deep hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
+                    Learn more
                   </a>
                 )}
               </div>
@@ -440,7 +450,7 @@ function DeductionInput({
             min="0"
             value={value || ""}
             onChange={(e) => onChange(e.target.value)}
-            className="w-16 bg-transparent text-right font-semibold text-violet-focus outline-none"
+            className="w-16 bg-transparent text-right font-semibold text-inktext outline-none"
             placeholder="0"
             aria-describedby={warning ? `${id}-warning` : undefined}
           />
