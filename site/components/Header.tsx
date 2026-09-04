@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 const navLinks = [
   { href: "/#calculator", label: "Calculator" },
@@ -12,6 +13,10 @@ const navLinks = [
 
 export default function Header() {
   const [menu, setMenu] = useState(false);
+  const pathname = usePathname();
+
+  // The /embed route is meant to be iframed onto other sites — no site chrome there.
+  if (pathname?.startsWith("/embed")) return null;
 
   return (
     <header className="relative z-20 mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 py-6 lg:px-12">

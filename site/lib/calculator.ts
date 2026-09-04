@@ -1,38 +1,58 @@
 /**
  * UPDATE ANNUALLY
  * Tax year constants and config for the personal trainer tax calculator.
+ *
+ * 2026 figures verified against:
+ * - IRS Rev. Proc. 2025-32 (2026 brackets, standard deduction) — irs.gov
+ * - SSA 2026 wage base announcement — $184,500
+ * - IRS mid-year mileage rate announcement, July 13, 2026 (72.5¢ Jan 1–Jun 30,
+ *   76¢ Jul 1–Dec 31 — a rare mid-year adjustment; the last one was in 2022)
+ * - One Big Beautiful Bill Act / Public Law 119-21 (OBBBA), Section 70105:
+ *   permanent QBI deduction, $400 minimum QBI deduction for taxpayers with
+ *   >= $1,000 of QBI who materially participate, QBI phase-in range widened
+ *   to $75,000 (single) / $150,000 (MFJ) starting at $201,750 / $403,500
  */
 export const TAX_CONFIG = {
   TAX_YEAR: 2026,
   SS_WAGE_BASE: 184500, // Update annually
-  MILEAGE_RATE: 0.67, // Update annually
+  // The IRS made a rare mid-year adjustment for 2026 (announced Jul 13, 2026).
+  MILEAGE_RATE_H1: 0.725, // Jan 1 – Jun 30, 2026
+  MILEAGE_RATE_H2: 0.76, // Jul 1 – Dec 31, 2026
   SURTAX_THRESHOLDS: {
+    // Fixed by statute since 2013 — not inflation-adjusted.
     single: 200000,
     married: 250000,
   },
   STANDARD_DEDUCTIONS: {
-    single: 15000, // Projected for 2026
-    married: 30000, // Projected for 2026
+    single: 16100,
+    married: 32200,
   },
   FEDERAL_BRACKETS: {
     single: [
-      { start: 609350, rate: 0.37 },
-      { start: 243725, rate: 0.35 },
-      { start: 191950, rate: 0.32 },
-      { start: 100525, rate: 0.24 },
-      { start: 47150, rate: 0.22 },
-      { start: 11600, rate: 0.12 },
+      { start: 640600, rate: 0.37 },
+      { start: 256225, rate: 0.35 },
+      { start: 201775, rate: 0.32 },
+      { start: 105700, rate: 0.24 },
+      { start: 50400, rate: 0.22 },
+      { start: 12400, rate: 0.12 },
       { start: 0, rate: 0.10 },
     ],
     married: [
-      { start: 731200, rate: 0.37 },
-      { start: 487450, rate: 0.35 },
-      { start: 383900, rate: 0.32 },
-      { start: 201050, rate: 0.24 },
-      { start: 94300, rate: 0.22 },
-      { start: 23200, rate: 0.12 },
+      { start: 768700, rate: 0.37 },
+      { start: 512450, rate: 0.35 },
+      { start: 403550, rate: 0.32 },
+      { start: 211400, rate: 0.24 },
+      { start: 100800, rate: 0.22 },
+      { start: 24800, rate: 0.12 },
       { start: 0, rate: 0.10 },
     ],
+  },
+  // Simplified QBI model — see note at the qbiDeduction calculation below.
+  QBI_MIN_DEDUCTION: 400,
+  QBI_MIN_DEDUCTION_QBI_FLOOR: 1000, // must have >= this much QBI to get the floor
+  QBI_PHASEOUT_START: {
+    single: 201750,
+    married: 403500,
   },
 };
 
@@ -49,7 +69,8 @@ export interface TaxInputs {
     gymRent: number;
     equipment: number;
     software: number;
-    mileage: number; // in miles, will be converted via MILEAGE_RATE
+    mileageH1: number; // miles driven Jan 1 – Jun 30, at MILEAGE_RATE_H1
+    mileageH2: number; // miles driven Jul 1 – Dec 31, at MILEAGE_RATE_H2
     apparel: number;
     marketing: number;
     homeOffice: number;
@@ -69,6 +90,10 @@ export interface TaxResults {
   totalLiability: number;
   amountOwed: number;
   quarterlyPayment: number;
+  taxableIncome: number;
+  /** True when income is high enough that the real QBI deduction involves
+   *  phase-outs this simplified flat-20%-plus-floor model doesn't attempt. */
+  qbiAboveSimpleThreshold: boolean;
 }
 
 /**
@@ -81,7 +106,7 @@ export function calculateTaxes(inputs: TaxInputs): TaxResults {
   const d = inputs.deductions;
 
   // 1. Net self-employment profit
-  const mileageDeduction = d.mileage * TAX_CONFIG.MILEAGE_RATE;
+  const mileageDeduction = d.mileageH1 * TAX_CONFIG.MILEAGE_RATE_H1 + d.mileageH2 * TAX_CONFIG.MILEAGE_RATE_H2;
   const deductionsSum =
     d.certs +
     d.liabilityIns +
@@ -119,9 +144,18 @@ export function calculateTaxes(inputs: TaxInputs): TaxResults {
   const halfSeTax = totalSeTax / 2.0;
 
   // 8. Qualified Business Income (QBI) deduction
-  // Note: This is a simplified estimate and doesn't account for phase-outs or W-2/property limits.
+  // Simplified: flat 20% of QBI, with the OBBBA $400 minimum (for taxpayers
+  // with >= $1,000 of QBI who materially participate — true for essentially
+  // every solo self-employed trainer this tool is built for).
+  // Does NOT model the W-2 wage / UBIA phase-out that applies above
+  // TAX_CONFIG.QBI_PHASEOUT_START — see qbiAboveSimpleThreshold below, which
+  // flags that case so the UI can warn the user instead of silently
+  // understating or overstating their real deduction.
   const netAfterHalfSe = Math.max(0, netSeProfit - halfSeTax);
-  const qbiDeduction = netAfterHalfSe * 0.20;
+  const qbiEligible = netAfterHalfSe >= TAX_CONFIG.QBI_MIN_DEDUCTION_QBI_FLOOR;
+  const qbiDeduction = qbiEligible
+    ? Math.max(TAX_CONFIG.QBI_MIN_DEDUCTION, netAfterHalfSe * 0.20)
+    : netAfterHalfSe * 0.20;
 
   // 9. Taxable income
   const standardDeduction = TAX_CONFIG.STANDARD_DEDUCTIONS[inputs.filingStatus];
@@ -129,6 +163,9 @@ export function calculateTaxes(inputs: TaxInputs): TaxResults {
     0,
     inputs.w2Wages + netSeProfit - halfSeTax - qbiDeduction - standardDeduction
   );
+
+  const qbiAboveSimpleThreshold =
+    inputs.w2Wages + netAfterHalfSe > TAX_CONFIG.QBI_PHASEOUT_START[inputs.filingStatus];
 
   // 10. Federal income tax
   const brackets = TAX_CONFIG.FEDERAL_BRACKETS[inputs.filingStatus];
@@ -164,5 +201,19 @@ export function calculateTaxes(inputs: TaxInputs): TaxResults {
     totalLiability: Number(totalLiability.toFixed(2)),
     amountOwed: Number(amountOwed.toFixed(2)),
     quarterlyPayment: Number(quarterly.toFixed(2)),
+    taxableIncome: Number(taxableIncome.toFixed(2)),
+    qbiAboveSimpleThreshold,
   };
+}
+
+/** Approximate combined marginal rate (SE tax + federal bracket) at the
+ *  taxpayer's current income — used to show "≈ $X saved" per deduction
+ *  field as they fill in the form. Deliberately approximate: real
+ *  deductions interact with each other (and with the QBI/bracket math) in
+ *  ways a single shared rate can't capture exactly, hence "≈" in the UI. */
+export function estimateMarginalRate(results: TaxResults, filingStatus: FilingStatus): number {
+  const brackets = TAX_CONFIG.FEDERAL_BRACKETS[filingStatus];
+  const marginalFederalRate = brackets.find((b) => results.taxableIncome > b.start)?.rate ?? brackets[brackets.length - 1].rate;
+  const seRate = 0.153 * 0.9235; // approximate combined SE rate on net profit
+  return marginalFederalRate + (results.netSeProfit > 0 ? seRate : 0);
 }

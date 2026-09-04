@@ -37,7 +37,7 @@ export default function Home() {
     w2Wages: 0,
     w2Withheld: 0,
     gross1099: 85000,
-    deductions: { certs: 0, liabilityIns: 0, gymRent: 0, equipment: 0, software: 0, mileage: 0, apparel: 0, marketing: 0, homeOffice: 0, other: 0 },
+    deductions: { certs: 0, liabilityIns: 0, gymRent: 0, equipment: 0, software: 0, mileageH1: 0, mileageH2: 0, apparel: 0, marketing: 0, homeOffice: 0, other: 0 },
   });
   const money = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 
@@ -61,7 +61,6 @@ export default function Home() {
         <div className="pointer-events-none absolute bottom-0 right-[10%] size-80 rounded-full bg-accent/15 blur-[110px]" />
 
         <div className="relative z-10 max-w-3xl">
-          <p className="mb-8 text-xs font-semibold uppercase tracking-[.2em] text-accent-light">Tax clarity for trainers who do more</p>
           <h1 className="font-serif text-[clamp(3.4rem,8.5vw,8.4rem)] leading-[.83] tracking-[-.065em]">
             Build a business that moves with you.
           </h1>

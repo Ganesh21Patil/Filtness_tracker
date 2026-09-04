@@ -10,6 +10,9 @@ const guides = [
   ["Personal trainer tax deductions", "Understand the line between personal spending and expenses connected to running your training business.", "/guides/personal-trainer-tax-deductions"],
   ["1099 vs W-2 for personal trainers", "See the difference between W-2 wages and 1099 income, and why hybrid trainers need to watch Social Security withholding.", "/guides/1099-vs-w2-personal-trainers"],
   ["Quarterly tax deadlines for fitness pros", "The four IRS due dates for estimated tax payments, and what happens if you miss one.", "/guides/quarterly-tax-deadlines-fitness-pros"],
+  ["What the new $2,000 1099 threshold means for trainers", "Fewer 1099 forms doesn't mean less taxable income — why 2026's higher reporting threshold is a trap worth knowing about.", "/guides/1099-threshold-2026"],
+  ["Section 179 and your equipment purchases", "How to deduct the full cost of training equipment the year you buy it, instead of depreciating it over time.", "/guides/section-179-equipment"],
+  ["The minimum QBI deduction, explained", "2026's new guaranteed $400 QBI deduction, and where the real calculation gets more complex than a flat 20%.", "/guides/minimum-qbi-deduction"],
 ] as const;
 
 export default function GuidesIndex() {

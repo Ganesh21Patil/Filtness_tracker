@@ -9,10 +9,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/about",
     "/privacy",
     "/terms",
+    "/widget",
     "/guides",
     "/guides/personal-trainer-tax-deductions",
     "/guides/1099-vs-w2-personal-trainers",
     "/guides/quarterly-tax-deadlines-fitness-pros",
+    "/guides/1099-threshold-2026",
+    "/guides/section-179-equipment",
+    "/guides/minimum-qbi-deduction",
+    "/calculators/quarterly-tax-calculator-personal-trainers",
+    "/calculators/personal-trainer-deduction-finder",
+    "/calculators/llc-vs-scorp-fitness-professionals",
   ];
 
   return routes.map((route) => ({
