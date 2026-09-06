@@ -1,7 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import Calculator from "../components/Calculator";
+import Faq from "../components/Faq";
 import { calculateTaxes } from "../lib/calculator";
+import { faqs } from "../lib/faqs";
 import heroImage from "../public/hero-trainer.jpg";
 import trainerPortrait from "../public/trainer-portrait.png";
 
@@ -12,14 +14,6 @@ const guides = [
 ] as const;
 
 const trustPoints = ["Free to use", "Trainer-specific deductions", "Your numbers stay yours", "Updated for 2026"];
-
-const faqs = [
-  ["Is this actually free?", "Yes. There's no signup, no paywall, and no email capture to see your estimate."],
-  ["Is my data stored anywhere?", "No. Every calculation runs locally in your browser using JavaScript — nothing you type is sent to a server or saved. See our privacy policy for details."],
-  ["Which tax year does this use?", "2026 federal brackets, standard deductions, the Social Security wage base, and the standard mileage rate. We update these figures annually."],
-  ["Is this official tax advice?", "No. This is a planning estimate, not formal tax or legal advice. Consult a CPA or enrolled agent before filing or making estimated payments — especially with complex income or high earnings."],
-  ["What if I have both W-2 and 1099 income?", "Enter both. The calculator accounts for W-2 wages you already report, alongside your self-employment profit, when estimating your combined liability."],
-];
 
 function Spark({ className = "" }: { className?: string }) {
   return (
@@ -161,14 +155,7 @@ export default function Home() {
         <div className="mx-auto max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-deep">Questions</p>
           <h2 className="mt-4 font-serif text-4xl leading-[.9] tracking-[-.05em] md:text-5xl">Good to know before you start.</h2>
-          <dl className="mt-12 divide-y divide-[#e2deeb]">
-            {faqs.map(([q, a]) => (
-              <div key={q} className="py-6">
-                <dt className="text-lg font-semibold text-inktext">{q}</dt>
-                <dd className="mt-2 text-[#413d57] leading-relaxed">{a}</dd>
-              </div>
-            ))}
-          </dl>
+          <Faq />
         </div>
       </section>
 
@@ -198,22 +185,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* EMBED / GROWTH */}
-      <section className="bg-ink px-6 py-20 lg:px-12">
-        <div className="mx-auto max-w-4xl rounded-[28px] border border-white/15 bg-panel/60 p-8 sm:p-12 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-light">For site owners</p>
-          <h2 className="mt-4 font-serif text-3xl sm:text-4xl tracking-[-.03em]">Run a gym-business blog or resource site?</h2>
-          <p className="mt-4 max-w-xl mx-auto text-offwhite/75">
-            Embed this calculator on your own page — free, stays free for your readers, no signup, and it&apos;s the same real tax engine as this site.
-          </p>
-          <Link
-            href="/widget"
-            className="mt-7 inline-flex items-center justify-center rounded-full bg-accent px-7 py-3.5 font-semibold text-ink transition hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,199,239,.25)]"
-          >
-            Get the embed code
-          </Link>
-        </div>
-      </section>
     </main>
   );
 }

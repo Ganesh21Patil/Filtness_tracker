@@ -66,9 +66,118 @@ function hasShape(v: any): v is TaxInputs {
   return v && typeof v === "object" && v.deductions && typeof v.deductions.mileageH1 === "number";
 }
 
+type WorkType = "independent" | "contractor" | "hybrid" | "studio";
+type DeductionKey = keyof TaxInputs["deductions"];
+
+const WORKTYPE_STORAGE_KEY = "trainerledger-worktype-v1";
+
+const WORK_TYPES: { id: WorkType; label: string; hint: string }[] = [
+  { id: "independent", label: "Independent trainer", hint: "Your own clients, no gym affiliation" },
+  { id: "contractor", label: "Gym contractor", hint: "You pay a gym or studio to train there" },
+  { id: "hybrid", label: "Hybrid", hint: "A gym paycheck plus your own private clients" },
+  { id: "studio", label: "Studio owner", hint: "You run your own space" },
+];
+
+const DEDUCTION_FIELDS: {
+  key: DeductionKey;
+  label: string;
+  hint: string;
+  prefix?: string;
+  tooltipText?: string;
+  learnMoreLink?: string;
+}[] = [
+  {
+    key: "gymRent",
+    label: "Gym rental / revenue split",
+    hint: "Booth fees or studio split",
+    tooltipText: "Include the portion of gym or studio rental costs you pay to operate your training business.",
+  },
+  {
+    key: "certs",
+    label: "Certifications & CEUs",
+    hint: "NASM, ACE, renewals",
+    tooltipText: "Professional certifications, continuing education, and training expenses may qualify when they are related to maintaining or improving your current business skills. Eligibility depends on your situation.",
+  },
+  {
+    key: "liabilityIns",
+    label: "Liability insurance",
+    hint: "Most trainers pay $150–$300/yr",
+    tooltipText: "Business liability insurance used to protect your training business may generally qualify as a business expense.",
+  },
+  {
+    key: "equipment",
+    label: "Equipment",
+    hint: "Weights, bands, wearables",
+    tooltipText: "Business-use equipment such as weights, resistance bands, mats, or other training gear may qualify. Keep records showing business use. Under Section 179, qualifying equipment can generally be deducted in full the year you buy it, rather than depreciated over several years.",
+  },
+  {
+    key: "software",
+    label: "Coaching software & apps",
+    hint: "Trainerize, Zoom, payment fees",
+    tooltipText: "Software used to run or support your training business may qualify, such as scheduling, client-management, programming, or coaching platforms.",
+  },
+  {
+    key: "mileageH1",
+    label: "Business mileage (Jan 1 – Jun 30)",
+    hint: "72.5¢/mile — first half of 2026",
+    prefix: "miles",
+    tooltipText: "The IRS made a rare mid-year rate change for 2026 (announced July 13). Miles driven before July 1 are deducted at 72.5¢/mile. Include qualifying business miles such as travel between clients — normal commuting doesn't count.",
+    learnMoreLink: "/guides/personal-trainer-tax-deductions#mileage",
+  },
+  {
+    key: "mileageH2",
+    label: "Business mileage (Jul 1 – Dec 31)",
+    hint: "76¢/mile — second half of 2026",
+    prefix: "miles",
+    tooltipText: "Miles driven on or after July 1, 2026 are deducted at the higher 76¢/mile rate the IRS announced mid-year. Only miles driven after the change qualify for this rate.",
+    learnMoreLink: "/guides/personal-trainer-tax-deductions#mileage",
+  },
+  { key: "marketing", label: "Marketing", hint: "Hosting, ads, business cards" },
+  { key: "apparel", label: "Branded apparel", hint: "Only clothing with your logo" },
+  { key: "homeOffice", label: "Home office deduction", hint: "Simplified sq-footage estimate" },
+  { key: "other", label: "Other expenses", hint: "Miscellaneous business costs" },
+];
+
+// The categories most likely to apply per work type, in the order they should
+// appear. Everything else waits behind the expander. This never hides a field
+// that already has a value in it — see isDeductionVisible below.
+const CORE_DEDUCTIONS: Record<WorkType | "unset", DeductionKey[]> = {
+  unset: ["certs", "liabilityIns", "equipment", "software", "mileageH1", "mileageH2"],
+  independent: ["certs", "liabilityIns", "mileageH1", "mileageH2", "equipment", "software"],
+  contractor: ["gymRent", "certs", "liabilityIns", "mileageH1", "mileageH2", "equipment"],
+  hybrid: ["certs", "liabilityIns", "mileageH1", "mileageH2", "equipment", "software"],
+  studio: ["gymRent", "equipment", "marketing", "software", "liabilityIns"],
+};
+
+function labelFor(field: (typeof DEDUCTION_FIELDS)[number], workType: WorkType | null) {
+  if (field.key === "gymRent" && workType === "studio") return "Studio rent / lease";
+  return field.label;
+}
+
+function SectionHeading({ n, title, done, children }: { n: number; title: string; done: boolean; children?: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-3">
+      <span
+        aria-hidden="true"
+        className={`mt-0.5 grid size-6 flex-shrink-0 place-items-center rounded-full text-[11px] font-bold transition-colors ${
+          done ? "bg-accent-deep text-white" : "bg-[#efecf5] text-[#8b869c]"
+        }`}
+      >
+        {done ? "✓" : n}
+      </span>
+      <div className="min-w-0 flex-1">
+        <h2 className="text-lg font-semibold text-inktext">{title}</h2>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function Calculator({ embed = false }: { embed?: boolean }) {
   const [inputs, setInputs] = useState<TaxInputs>(emptyInputs);
   const [loadedFromStorage, setLoadedFromStorage] = useState(false);
+  const [workType, setWorkType] = useState<WorkType | null>(null);
+  const [showAllFields, setShowAllFields] = useState(false);
 
   // Restore a returning visitor's numbers from their own browser — never sent
   // anywhere, consistent with the privacy policy. Skipped entirely in embed
@@ -83,6 +192,8 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
         const parsed = JSON.parse(raw);
         if (hasShape(parsed)) setInputs(parsed);
       }
+      const savedWorkType = window.localStorage.getItem(WORKTYPE_STORAGE_KEY);
+      if (WORK_TYPES.some((w) => w.id === savedWorkType)) setWorkType(savedWorkType as WorkType);
     } catch {
       // ignore — worst case, the form just starts empty
     } finally {
@@ -94,10 +205,11 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
     if (embed || !loadedFromStorage) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(inputs));
+      if (workType) window.localStorage.setItem(WORKTYPE_STORAGE_KEY, workType);
     } catch {
       // storage full or unavailable — the calculator still works, it just won't persist
     }
-  }, [inputs, loadedFromStorage, embed]);
+  }, [inputs, workType, loadedFromStorage, embed]);
 
   // Tracks which fields the user just tried to enter a negative value into,
   // so we can surface a message instead of silently clamping to 0.
@@ -186,6 +298,27 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
   const hasIncome = inputs.gross1099 > 0 || inputs.w2Wages > 0;
   const deductionsExceedIncome = inputs.gross1099 > 0 && deductionsSum > inputs.gross1099;
 
+  // Progressive disclosure, with one hard rule: a field that currently holds a
+  // value is always visible, whatever the work type says. Hiding a field that
+  // is still changing the number would make the estimate quietly unexplainable.
+  const coreDeductions = CORE_DEDUCTIONS[workType ?? "unset"];
+  const isDeductionVisible = (key: DeductionKey) =>
+    showAllFields || coreDeductions.includes(key) || inputs.deductions[key] > 0;
+
+  const visibleDeductions = [
+    ...coreDeductions,
+    ...DEDUCTION_FIELDS.map((f) => f.key).filter((k) => !coreDeductions.includes(k) && isDeductionVisible(k)),
+  ];
+  const hiddenDeductionCount = DEDUCTION_FIELDS.filter((f) => !isDeductionVisible(f.key)).length;
+
+  const showW2Section =
+    showAllFields ||
+    workType === null ||
+    workType === "hybrid" ||
+    workType === "studio" ||
+    inputs.w2Wages > 0 ||
+    inputs.w2Withheld > 0;
+
   const fillTypical = () => setInputs(typicalInputs);
 
   const downloadIcs = () => {
@@ -228,18 +361,37 @@ END:VCALENDAR`;
     <div className="grid gap-8 lg:grid-cols-[1.15fr_.85fr]">
       {/* Form */}
       <div className="print:hidden rounded-[28px] bg-white p-6 shadow-[0_18px_50px_rgba(31,25,74,.1)] md:p-9 space-y-9">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-inktext">1. The basics</h2>
-          <button
-            type="button"
-            onClick={fillTypical}
-            className="text-xs font-semibold text-accent-deep hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
-          >
-            Not sure? Fill typical trainer numbers
-          </button>
-        </div>
-        <section className="-mt-5">
-          <div>
+        <section>
+          <SectionHeading n={1} title="About your work" done={workType !== null}>
+            <p className="mt-1 text-sm text-[#66617a]">This just decides which fields you see. Nothing is locked away.</p>
+          </SectionHeading>
+
+          <fieldset className="mt-5">
+            <legend className="mb-2 text-[13px] font-semibold text-[#413d57]">What kind of training work do you do?</legend>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {WORK_TYPES.map((w) => (
+                <label
+                  key={w.id}
+                  className={`cursor-pointer rounded-[14px] border p-3 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent ${
+                    workType === w.id ? "border-accent-deep bg-accent-deep/[.06]" : "border-[#e7e3ee] hover:border-accent-deep/60"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="workType"
+                    value={w.id}
+                    checked={workType === w.id}
+                    onChange={() => setWorkType(w.id)}
+                    className="sr-only"
+                  />
+                  <span className="block text-[13px] font-semibold text-inktext">{w.label}</span>
+                  <span className="mt-0.5 block text-[11px] leading-tight text-[#777287]">{w.hint}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <div className="mt-5">
             <label htmlFor="filingStatus" className="block text-[13px] font-semibold text-[#413d57] mb-2">
               Filing status
             </label>
@@ -253,30 +405,48 @@ END:VCALENDAR`;
               <option value="married">Married Filing Jointly</option>
             </select>
           </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <button
+              type="button"
+              onClick={fillTypical}
+              className="text-xs font-semibold text-accent-deep hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
+            >
+              Not sure? Fill typical trainer numbers
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowAllFields((v) => !v)}
+              className="text-xs font-semibold text-[#66617a] hover:text-accent-deep hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
+            >
+              {showAllFields ? "Use the guided view" : "Show all fields"}
+            </button>
+          </div>
         </section>
 
         {/* W-2 + 1099 income */}
         <section>
-          <h2 className="text-lg font-semibold text-inktext mb-1">2. Your income</h2>
-          <p className="text-sm text-[#66617a] mb-4">If you're an employee at a gym, add your W-2 wages too. If you're 100% independent, leave that at 0.</p>
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div>
-              <label htmlFor="w2Wages" className="block text-[13px] font-semibold text-[#413d57] mb-2">Annual W-2 wages</label>
-              <input
-                id="w2Wages"
-                type="number"
-                min="0"
-                value={inputs.w2Wages || ""}
-                onChange={(e) => handleInputChange("w2Wages", e.target.value)}
-                className={inputBaseClass}
-                placeholder="0"
-                aria-describedby={fieldWarnings.w2Wages ? "w2Wages-warning" : undefined}
-              />
-              {fieldWarnings.w2Wages && (
-                <p id="w2Wages-warning" role="alert" className="text-xs text-red-600 mt-1.5">{fieldWarnings.w2Wages}</p>
-              )}
-            </div>
-            <div>
+          <SectionHeading n={2} title="Your income" done={hasIncome} />
+          <div className="mt-5 grid gap-5 sm:grid-cols-2">
+            {showW2Section && (
+              <div className={workType === "hybrid" ? "sm:order-2" : undefined}>
+                <label htmlFor="w2Wages" className="block text-[13px] font-semibold text-[#413d57] mb-2">Annual W-2 wages</label>
+                <input
+                  id="w2Wages"
+                  type="number"
+                  min="0"
+                  value={inputs.w2Wages || ""}
+                  onChange={(e) => handleInputChange("w2Wages", e.target.value)}
+                  className={inputBaseClass}
+                  placeholder="0"
+                  aria-describedby={fieldWarnings.w2Wages ? "w2Wages-warning" : undefined}
+                />
+                {fieldWarnings.w2Wages && (
+                  <p id="w2Wages-warning" role="alert" className="text-xs text-red-600 mt-1.5">{fieldWarnings.w2Wages}</p>
+                )}
+              </div>
+            )}
+            <div className={workType === "hybrid" ? "sm:order-1" : undefined}>
               <label htmlFor="gross1099" className="block text-[13px] font-semibold text-[#413d57] mb-2">Gross training income</label>
               <input
                 id="gross1099"
@@ -293,152 +463,82 @@ END:VCALENDAR`;
               )}
             </div>
           </div>
+          {workType === "hybrid" && (
+            <p className="mt-4 text-xs leading-relaxed text-[#413d57] bg-accent-deep/[.06] border border-accent-deep/20 rounded-lg p-3">
+              <strong>Both boxes matter for you.</strong> Your gym already withheld Social Security on the W-2 side, so entering those wages stops the calculator from charging you that portion twice on your private-client income.
+            </p>
+          )}
           <p className="mt-4 text-xs leading-relaxed text-[#8b869c] bg-[#faf9f7] border border-[#e2deeb] rounded-lg p-3">
             <strong className="text-[#413d57]">Not receiving a 1099 doesn&apos;t mean it isn&apos;t taxable.</strong> For 2026, clients don&apos;t have to send you a 1099-NEC unless they paid you $2,000+ (up from $600), and payment apps only issue a 1099-K above $20,000 and 200 transactions. Track and report all your training income yourself, regardless of what forms show up.
           </p>
-          <div className="mt-5">
-            <label htmlFor="w2Withheld" className="block text-[13px] font-semibold text-[#413d57] mb-2">Tax already withheld from W-2</label>
-            <input
-              id="w2Withheld"
-              type="number"
-              min="0"
-              value={inputs.w2Withheld || ""}
-              onChange={(e) => handleInputChange("w2Withheld", e.target.value)}
-              className={inputBaseClass + " sm:max-w-[240px]"}
-              placeholder="0"
-              aria-describedby={fieldWarnings.w2Withheld ? "w2Withheld-warning" : undefined}
-            />
-            {fieldWarnings.w2Withheld && (
-              <p id="w2Withheld-warning" role="alert" className="text-xs text-red-600 mt-1.5">{fieldWarnings.w2Withheld}</p>
-            )}
-          </div>
+          {showW2Section && (
+            <div className="mt-5">
+              <label htmlFor="w2Withheld" className="block text-[13px] font-semibold text-[#413d57] mb-2">Tax already withheld from W-2</label>
+              <input
+                id="w2Withheld"
+                type="number"
+                min="0"
+                value={inputs.w2Withheld || ""}
+                onChange={(e) => handleInputChange("w2Withheld", e.target.value)}
+                className={inputBaseClass + " sm:max-w-[240px]"}
+                placeholder="0"
+                aria-describedby={fieldWarnings.w2Withheld ? "w2Withheld-warning" : undefined}
+              />
+              {fieldWarnings.w2Withheld && (
+                <p id="w2Withheld-warning" role="alert" className="text-xs text-red-600 mt-1.5">{fieldWarnings.w2Withheld}</p>
+              )}
+            </div>
+          )}
         </section>
 
         {/* Deductions */}
         <section id="deductions" className="border-t border-[#e9e6f1] pt-7 scroll-mt-24">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-xl font-semibold text-inktext">Did you deduct these?</p>
-              <p className="mt-1 text-sm text-[#66617a]">Most trainers miss at least one.</p>
-            </div>
-            <div className="text-right whitespace-nowrap">
+          <SectionHeading n={3} title="Your deductions" done={deductionsSum > 0}>
+            <p className="mt-1 text-sm text-[#66617a]">Most trainers miss at least one.</p>
+          </SectionHeading>
+
+          <div className="mt-4 flex items-end justify-between gap-4">
+            <p className="max-w-[24ch] text-xs text-[#8b869c]">
+              {workType === null
+                ? "Pick a work type above and this list narrows to what applies to you."
+                : "Showing what usually applies to your setup."}
+            </p>
+            <div className="whitespace-nowrap text-right">
               <p className="text-sm font-semibold text-accent-deep">{money(deductionsSum)} found</p>
               {estimatedSavings > 0 && <p className="text-xs text-[#66617a]">≈ {money(estimatedSavings)} saved</p>}
             </div>
           </div>
 
           <div className="mt-5 grid gap-3 sm:grid-cols-2">
-            <DeductionInput
-              id="deduction-certs"
-              label="Certifications & CEUs"
-              hint="NASM, ACE, renewals"
-              value={inputs.deductions.certs}
-              onChange={(v) => handleDeductionChange("certs", v)}
-              warning={fieldWarnings["deductions.certs"]}
-              savings={fieldSavings.certs}
-              tooltipText="Professional certifications, continuing education, and training expenses may qualify when they are related to maintaining or improving your current business skills. Eligibility depends on your situation."
-            />
-            <DeductionInput
-              id="deduction-liabilityIns"
-              label="Liability insurance"
-              hint="Most trainers pay $150–$300/yr"
-              value={inputs.deductions.liabilityIns}
-              onChange={(v) => handleDeductionChange("liabilityIns", v)}
-              warning={fieldWarnings["deductions.liabilityIns"]}
-              savings={fieldSavings.liabilityIns}
-              tooltipText="Business liability insurance used to protect your training business may generally qualify as a business expense."
-            />
-            <DeductionInput
-              id="deduction-gymRent"
-              label="Gym rental / revenue split"
-              hint="Booth fees or studio split"
-              value={inputs.deductions.gymRent}
-              onChange={(v) => handleDeductionChange("gymRent", v)}
-              warning={fieldWarnings["deductions.gymRent"]}
-              savings={fieldSavings.gymRent}
-              tooltipText="Include the portion of gym or studio rental costs you pay to operate your training business."
-            />
-            <DeductionInput
-              id="deduction-equipment"
-              label="Equipment"
-              hint="Weights, bands, wearables"
-              value={inputs.deductions.equipment}
-              onChange={(v) => handleDeductionChange("equipment", v)}
-              warning={fieldWarnings["deductions.equipment"]}
-              savings={fieldSavings.equipment}
-              tooltipText="Business-use equipment such as weights, resistance bands, mats, or other training gear may qualify. Keep records showing business use. Under Section 179, qualifying equipment can generally be deducted in full the year you buy it, rather than depreciated over several years."
-            />
-            <DeductionInput
-              id="deduction-software"
-              label="Coaching software & apps"
-              hint="Trainerize, Zoom, payment fees"
-              value={inputs.deductions.software}
-              onChange={(v) => handleDeductionChange("software", v)}
-              warning={fieldWarnings["deductions.software"]}
-              savings={fieldSavings.software}
-              tooltipText="Software used to run or support your training business may qualify, such as scheduling, client-management, programming, or coaching platforms."
-            />
-            <DeductionInput
-              id="deduction-mileageH1"
-              label="Business mileage (Jan 1 – Jun 30)"
-              hint="72.5¢/mile — first half of 2026"
-              value={inputs.deductions.mileageH1}
-              onChange={(v) => handleDeductionChange("mileageH1", v)}
-              warning={fieldWarnings["deductions.mileageH1"]}
-              savings={fieldSavings.mileageH1}
-              prefix="miles"
-              tooltipText="The IRS made a rare mid-year rate change for 2026 (announced July 13). Miles driven before July 1 are deducted at 72.5¢/mile. Include qualifying business miles such as travel between clients — normal commuting doesn't count."
-              learnMoreLink="/guides/personal-trainer-tax-deductions#mileage"
-            />
-            <DeductionInput
-              id="deduction-mileageH2"
-              label="Business mileage (Jul 1 – Dec 31)"
-              hint="76¢/mile — second half of 2026"
-              value={inputs.deductions.mileageH2}
-              onChange={(v) => handleDeductionChange("mileageH2", v)}
-              warning={fieldWarnings["deductions.mileageH2"]}
-              savings={fieldSavings.mileageH2}
-              prefix="miles"
-              tooltipText="Miles driven on or after July 1, 2026 are deducted at the higher 76¢/mile rate the IRS announced mid-year. Only miles driven after the change qualify for this rate."
-              learnMoreLink="/guides/personal-trainer-tax-deductions#mileage"
-            />
-            <DeductionInput
-              id="deduction-apparel"
-              label="Branded apparel"
-              hint="Only clothing with your logo"
-              value={inputs.deductions.apparel}
-              onChange={(v) => handleDeductionChange("apparel", v)}
-              warning={fieldWarnings["deductions.apparel"]}
-              savings={fieldSavings.apparel}
-            />
-            <DeductionInput
-              id="deduction-marketing"
-              label="Marketing"
-              hint="Hosting, ads, business cards"
-              value={inputs.deductions.marketing}
-              onChange={(v) => handleDeductionChange("marketing", v)}
-              warning={fieldWarnings["deductions.marketing"]}
-              savings={fieldSavings.marketing}
-            />
-            <DeductionInput
-              id="deduction-homeOffice"
-              label="Home office deduction"
-              hint="Simplified sq-footage estimate"
-              value={inputs.deductions.homeOffice}
-              onChange={(v) => handleDeductionChange("homeOffice", v)}
-              warning={fieldWarnings["deductions.homeOffice"]}
-              savings={fieldSavings.homeOffice}
-            />
-            <DeductionInput
-              id="deduction-other"
-              label="Other expenses"
-              hint="Miscellaneous business costs"
-              value={inputs.deductions.other}
-              onChange={(v) => handleDeductionChange("other", v)}
-              warning={fieldWarnings["deductions.other"]}
-              savings={fieldSavings.other}
-            />
+            {visibleDeductions.map((key) => {
+              const field = DEDUCTION_FIELDS.find((f) => f.key === key)!;
+              return (
+                <DeductionInput
+                  key={key}
+                  id={`deduction-${key}`}
+                  label={labelFor(field, workType)}
+                  hint={field.hint}
+                  prefix={field.prefix}
+                  tooltipText={field.tooltipText}
+                  learnMoreLink={field.learnMoreLink}
+                  value={inputs.deductions[key]}
+                  onChange={(v) => handleDeductionChange(key, v)}
+                  warning={fieldWarnings[`deductions.${key}`]}
+                  savings={fieldSavings[key]}
+                />
+              );
+            })}
           </div>
+
+          {hiddenDeductionCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowAllFields(true)}
+              className="mt-4 w-full rounded-[14px] border border-dashed border-[#d9d4e6] py-3 text-sm font-semibold text-accent-deep transition hover:border-accent-deep/60 hover:bg-accent-deep/[.04] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              Show {hiddenDeductionCount} more {hiddenDeductionCount === 1 ? "deduction" : "deductions"} — most trainers miss at least one
+            </button>
+          )}
         </section>
 
         {/* Ad slot: kept in the codebase for when real ads are wired up, but not
@@ -458,7 +558,7 @@ END:VCALENDAR`;
           {!hasIncome ? (
             <EmptyResultsState />
           ) : (
-            <div aria-live="polite" className="flex flex-1 flex-col">
+            <div aria-live="polite" className="flex flex-1 flex-col motion-safe:animate-[results-in_320ms_ease-out]">
               {deductionsExceedIncome && (
                 <div className="mt-6 flex items-start gap-2 rounded-lg bg-amber-400/10 border border-amber-400/30 px-3 py-2.5 text-xs text-amber-200">
                   <svg className="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
@@ -563,7 +663,20 @@ function EmptyResultsState() {
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
       </div>
       <p className="text-white font-semibold mb-1">Your estimate will appear here</p>
-      <p className="text-sm text-[#a7a2c8] max-w-[240px]">Enter your W-2 wages or gross training income on the left to see your tax breakdown and quarterly payments.</p>
+      <p className="text-sm text-[#a7a2c8] max-w-[250px]">Add your income on the left and this panel fills in.</p>
+      <ul className="mt-5 w-full max-w-[250px] space-y-2 text-left text-xs text-[#a7a2c8]">
+        {[
+          "What to set aside each quarter",
+          "The four IRS due dates, downloadable",
+          "Self-employment tax and federal tax, split out",
+          "Where your income actually goes",
+        ].map((item) => (
+          <li key={item} className="flex items-start gap-2">
+            <span aria-hidden="true" className="mt-1.5 size-1.5 flex-shrink-0 rounded-full bg-accent/50" />
+            {item}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

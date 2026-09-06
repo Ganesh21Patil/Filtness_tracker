@@ -35,6 +35,19 @@
   }
 }
 
+/* One entrance for the whole results panel when an estimate first appears —
+   a single fade and slide, not a per-element cascade. */
+@keyframes results-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Brief replay of a value-update pop whenever a keyed metric node remounts.
    Gated entirely inside the media query so it's a no-op under reduced motion. */
 @media (prefers-reduced-motion: no-preference) {
