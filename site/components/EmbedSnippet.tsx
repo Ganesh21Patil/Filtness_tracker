@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 export default function EmbedSnippet() {
   const [origin, setOrigin] = useState("");
-  const [copied, setCopied] = useState(false);
+  const [status, setStatus] = useState<"idle" | "copied" | "failed">("idle");
 
   useEffect(() => {
     setOrigin(window.location.origin);
@@ -15,11 +15,26 @@ export default function EmbedSnippet() {
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(snippet);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setStatus("copied");
     } catch {
-      // clipboard API unavailable — the code is still selectable/copyable manually
+      // Clipboard API blocked (permissions, insecure context) — fall back to
+      // the classic textarea + execCommand trick so the button still works.
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = snippet;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        const ok = document.execCommand("copy");
+        document.body.removeChild(textarea);
+        setStatus(ok ? "copied" : "failed");
+      } catch {
+        setStatus("failed");
+      }
     }
+    setTimeout(() => setStatus("idle"), 2500);
   };
 
   return (
@@ -31,7 +46,7 @@ export default function EmbedSnippet() {
           onClick={copy}
           className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-ink transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-light"
         >
-          {copied ? "Copied!" : "Copy"}
+          {status === "copied" ? "Copied!" : status === "failed" ? "Select & copy manually" : "Copy"}
         </button>
       </div>
       <pre className="overflow-x-auto text-xs text-offwhite/80 leading-relaxed"><code>{snippet}</code></pre>

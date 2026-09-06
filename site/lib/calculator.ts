@@ -205,15 +205,3 @@ export function calculateTaxes(inputs: TaxInputs): TaxResults {
     qbiAboveSimpleThreshold,
   };
 }
-
-/** Approximate combined marginal rate (SE tax + federal bracket) at the
- *  taxpayer's current income — used to show "≈ $X saved" per deduction
- *  field as they fill in the form. Deliberately approximate: real
- *  deductions interact with each other (and with the QBI/bracket math) in
- *  ways a single shared rate can't capture exactly, hence "≈" in the UI. */
-export function estimateMarginalRate(results: TaxResults, filingStatus: FilingStatus): number {
-  const brackets = TAX_CONFIG.FEDERAL_BRACKETS[filingStatus];
-  const marginalFederalRate = brackets.find((b) => results.taxableIncome > b.start)?.rate ?? brackets[brackets.length - 1].rate;
-  const seRate = 0.153 * 0.9235; // approximate combined SE rate on net profit
-  return marginalFederalRate + (results.netSeProfit > 0 ? seRate : 0);
-}

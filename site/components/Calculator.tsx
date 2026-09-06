@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { calculateTaxes, estimateMarginalRate, TaxInputs, FilingStatus, TAX_CONFIG } from "../lib/calculator";
+import { calculateTaxes, TaxInputs, FilingStatus, TAX_CONFIG } from "../lib/calculator";
 import SaveEstimateButton from "./SaveEstimateButton";
 
 const inputBaseClass =
@@ -66,13 +66,17 @@ function hasShape(v: any): v is TaxInputs {
   return v && typeof v === "object" && v.deductions && typeof v.deductions.mileageH1 === "number";
 }
 
-export default function Calculator() {
+export default function Calculator({ embed = false }: { embed?: boolean }) {
   const [inputs, setInputs] = useState<TaxInputs>(emptyInputs);
   const [loadedFromStorage, setLoadedFromStorage] = useState(false);
 
   // Restore a returning visitor's numbers from their own browser — never sent
-  // anywhere, consistent with the privacy policy.
+  // anywhere, consistent with the privacy policy. Skipped entirely in embed
+  // mode: the widget is meant to be a stateless anonymous tool wherever it's
+  // dropped, and this origin's localStorage would otherwise leak a visitor's
+  // numbers from the main site into every blog that embeds it, or vice versa.
   useEffect(() => {
+    if (embed) return;
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
@@ -84,16 +88,16 @@ export default function Calculator() {
     } finally {
       setLoadedFromStorage(true);
     }
-  }, []);
+  }, [embed]);
 
   useEffect(() => {
-    if (!loadedFromStorage) return;
+    if (embed || !loadedFromStorage) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(inputs));
     } catch {
       // storage full or unavailable — the calculator still works, it just won't persist
     }
-  }, [inputs, loadedFromStorage]);
+  }, [inputs, loadedFromStorage, embed]);
 
   // Tracks which fields the user just tried to enter a negative value into,
   // so we can surface a message instead of silently clamping to 0.
@@ -133,7 +137,6 @@ export default function Calculator() {
 
   const results = useMemo(() => calculateTaxes(inputs), [inputs]);
   const money = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
-  const marginalRate = useMemo(() => estimateMarginalRate(results, inputs.filingStatus), [results, inputs.filingStatus]);
 
   const deductionsSum = useMemo(() => {
     const d = inputs.deductions;
@@ -152,7 +155,34 @@ export default function Calculator() {
     );
   }, [inputs.deductions]);
 
-  const estimatedSavings = deductionsSum * marginalRate;
+  // Exact per-field and total savings: recompute the real tax engine with
+  // that field (or all fields) zeroed out and diff the actual totalLiability.
+  // Not an approximation — this can't overstate savings when federal tax is
+  // already $0, or misjudge QBI-floor/threshold effects, because it's just
+  // running the same calculation the results panel uses, twice.
+  const fieldSavings = useMemo(() => {
+    const d = inputs.deductions;
+    const savings = {} as Record<keyof TaxInputs["deductions"], number>;
+    (Object.keys(d) as (keyof TaxInputs["deductions"])[]).forEach((key) => {
+      if (!d[key]) {
+        savings[key] = 0;
+        return;
+      }
+      const without = calculateTaxes({ ...inputs, deductions: { ...d, [key]: 0 } });
+      savings[key] = Math.max(0, without.totalLiability - results.totalLiability);
+    });
+    return savings;
+  }, [inputs, results.totalLiability]);
+
+  const estimatedSavings = useMemo(() => {
+    if (deductionsSum <= 0) return 0;
+    const zeroedDeductions = { ...inputs.deductions };
+    (Object.keys(zeroedDeductions) as (keyof TaxInputs["deductions"])[]).forEach((key) => {
+      zeroedDeductions[key] = 0;
+    });
+    const without = calculateTaxes({ ...inputs, deductions: zeroedDeductions });
+    return Math.max(0, without.totalLiability - results.totalLiability);
+  }, [inputs, deductionsSum, results.totalLiability]);
   const hasIncome = inputs.gross1099 > 0 || inputs.w2Wages > 0;
   const deductionsExceedIncome = inputs.gross1099 > 0 && deductionsSum > inputs.gross1099;
 
@@ -305,7 +335,7 @@ END:VCALENDAR`;
               value={inputs.deductions.certs}
               onChange={(v) => handleDeductionChange("certs", v)}
               warning={fieldWarnings["deductions.certs"]}
-              savings={inputs.deductions.certs * marginalRate}
+              savings={fieldSavings.certs}
               tooltipText="Professional certifications, continuing education, and training expenses may qualify when they are related to maintaining or improving your current business skills. Eligibility depends on your situation."
             />
             <DeductionInput
@@ -315,7 +345,7 @@ END:VCALENDAR`;
               value={inputs.deductions.liabilityIns}
               onChange={(v) => handleDeductionChange("liabilityIns", v)}
               warning={fieldWarnings["deductions.liabilityIns"]}
-              savings={inputs.deductions.liabilityIns * marginalRate}
+              savings={fieldSavings.liabilityIns}
               tooltipText="Business liability insurance used to protect your training business may generally qualify as a business expense."
             />
             <DeductionInput
@@ -325,7 +355,7 @@ END:VCALENDAR`;
               value={inputs.deductions.gymRent}
               onChange={(v) => handleDeductionChange("gymRent", v)}
               warning={fieldWarnings["deductions.gymRent"]}
-              savings={inputs.deductions.gymRent * marginalRate}
+              savings={fieldSavings.gymRent}
               tooltipText="Include the portion of gym or studio rental costs you pay to operate your training business."
             />
             <DeductionInput
@@ -335,7 +365,7 @@ END:VCALENDAR`;
               value={inputs.deductions.equipment}
               onChange={(v) => handleDeductionChange("equipment", v)}
               warning={fieldWarnings["deductions.equipment"]}
-              savings={inputs.deductions.equipment * marginalRate}
+              savings={fieldSavings.equipment}
               tooltipText="Business-use equipment such as weights, resistance bands, mats, or other training gear may qualify. Keep records showing business use. Under Section 179, qualifying equipment can generally be deducted in full the year you buy it, rather than depreciated over several years."
             />
             <DeductionInput
@@ -345,7 +375,7 @@ END:VCALENDAR`;
               value={inputs.deductions.software}
               onChange={(v) => handleDeductionChange("software", v)}
               warning={fieldWarnings["deductions.software"]}
-              savings={inputs.deductions.software * marginalRate}
+              savings={fieldSavings.software}
               tooltipText="Software used to run or support your training business may qualify, such as scheduling, client-management, programming, or coaching platforms."
             />
             <DeductionInput
@@ -355,7 +385,7 @@ END:VCALENDAR`;
               value={inputs.deductions.mileageH1}
               onChange={(v) => handleDeductionChange("mileageH1", v)}
               warning={fieldWarnings["deductions.mileageH1"]}
-              savings={inputs.deductions.mileageH1 * TAX_CONFIG.MILEAGE_RATE_H1 * marginalRate}
+              savings={fieldSavings.mileageH1}
               prefix="miles"
               tooltipText="The IRS made a rare mid-year rate change for 2026 (announced July 13). Miles driven before July 1 are deducted at 72.5¢/mile. Include qualifying business miles such as travel between clients — normal commuting doesn't count."
               learnMoreLink="/guides/personal-trainer-tax-deductions#mileage"
@@ -367,7 +397,7 @@ END:VCALENDAR`;
               value={inputs.deductions.mileageH2}
               onChange={(v) => handleDeductionChange("mileageH2", v)}
               warning={fieldWarnings["deductions.mileageH2"]}
-              savings={inputs.deductions.mileageH2 * TAX_CONFIG.MILEAGE_RATE_H2 * marginalRate}
+              savings={fieldSavings.mileageH2}
               prefix="miles"
               tooltipText="Miles driven on or after July 1, 2026 are deducted at the higher 76¢/mile rate the IRS announced mid-year. Only miles driven after the change qualify for this rate."
               learnMoreLink="/guides/personal-trainer-tax-deductions#mileage"
@@ -379,7 +409,7 @@ END:VCALENDAR`;
               value={inputs.deductions.apparel}
               onChange={(v) => handleDeductionChange("apparel", v)}
               warning={fieldWarnings["deductions.apparel"]}
-              savings={inputs.deductions.apparel * marginalRate}
+              savings={fieldSavings.apparel}
             />
             <DeductionInput
               id="deduction-marketing"
@@ -388,7 +418,7 @@ END:VCALENDAR`;
               value={inputs.deductions.marketing}
               onChange={(v) => handleDeductionChange("marketing", v)}
               warning={fieldWarnings["deductions.marketing"]}
-              savings={inputs.deductions.marketing * marginalRate}
+              savings={fieldSavings.marketing}
             />
             <DeductionInput
               id="deduction-homeOffice"
@@ -397,7 +427,7 @@ END:VCALENDAR`;
               value={inputs.deductions.homeOffice}
               onChange={(v) => handleDeductionChange("homeOffice", v)}
               warning={fieldWarnings["deductions.homeOffice"]}
-              savings={inputs.deductions.homeOffice * marginalRate}
+              savings={fieldSavings.homeOffice}
             />
             <DeductionInput
               id="deduction-other"
@@ -406,7 +436,7 @@ END:VCALENDAR`;
               value={inputs.deductions.other}
               onChange={(v) => handleDeductionChange("other", v)}
               warning={fieldWarnings["deductions.other"]}
-              savings={inputs.deductions.other * marginalRate}
+              savings={fieldSavings.other}
             />
           </div>
         </section>
@@ -460,12 +490,19 @@ END:VCALENDAR`;
                 <button type="button" onClick={downloadIcs} className="flex-1 rounded-full bg-accent py-3.5 font-semibold text-[#121127] transition hover:bg-white">
                   Add due dates to calendar (.ics)
                 </button>
-                <button type="button" onClick={() => window.print()} className="flex-1 rounded-full border border-white/25 py-3.5 font-semibold text-white transition hover:bg-white/10">
-                  Print / save as PDF
-                </button>
+                {/* Printing from inside a third-party site's iframe is unpredictable
+                    (wrong page chrome, cross-origin print quirks) — desktop/full-page only. */}
+                {!embed && (
+                  <button type="button" onClick={() => window.print()} className="flex-1 rounded-full border border-white/25 py-3.5 font-semibold text-white transition hover:bg-white/10">
+                    Print / save as PDF
+                  </button>
+                )}
               </div>
 
-              <SaveEstimateButton inputs={inputs} results={results} />
+              {/* The embed is meant to work fully anonymously wherever it's dropped —
+                  a sign-in link would either hijack the host page's iframe or 404
+                  against the host's own domain, and it doesn't belong there anyway. */}
+              {!embed && <SaveEstimateButton inputs={inputs} results={results} />}
 
               <div className="mt-8 space-y-3.5 border-y border-white/15 py-6 text-sm">
                 <ResultRow label="Net self-employment profit" value={results.netSeProfit} />

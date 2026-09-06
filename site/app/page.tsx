@@ -197,6 +197,23 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* EMBED / GROWTH */}
+      <section className="bg-ink px-6 py-20 lg:px-12">
+        <div className="mx-auto max-w-4xl rounded-[28px] border border-white/15 bg-panel/60 p-8 sm:p-12 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-light">For site owners</p>
+          <h2 className="mt-4 font-serif text-3xl sm:text-4xl tracking-[-.03em]">Run a gym-business blog or resource site?</h2>
+          <p className="mt-4 max-w-xl mx-auto text-offwhite/75">
+            Embed this calculator on your own page — free, stays free for your readers, no signup, and it&apos;s the same real tax engine as this site.
+          </p>
+          <Link
+            href="/widget"
+            className="mt-7 inline-flex items-center justify-center rounded-full bg-accent px-7 py-3.5 font-semibold text-ink transition hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,199,239,.25)]"
+          >
+            Get the embed code
+          </Link>
+        </div>
+      </section>
     </main>
   );
 }
