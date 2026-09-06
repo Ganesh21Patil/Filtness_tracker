@@ -3,6 +3,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { calculateTaxes, TaxInputs, FilingStatus, TAX_CONFIG } from "../lib/calculator";
 import SaveEstimateButton from "./SaveEstimateButton";
+import Link from "next/link";
+import { downloadQuarterlyIcs } from "../lib/ics";
 
 const inputBaseClass =
   "w-full rounded-xl border border-[#e2deeb] bg-white p-4 min-h-[44px] text-[17px] font-medium text-inktext transition-colors focus:outline-none focus:border-accent-deep focus:ring-2 focus:ring-accent-deep/15";
@@ -321,41 +323,7 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
 
   const fillTypical = () => setInputs(typicalInputs);
 
-  const downloadIcs = () => {
-    const year = TAX_CONFIG.TAX_YEAR;
-    const amount = results.quarterlyPayment.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const dates: [string, string][] = [
-      [`${year}0415`, "Q1"],
-      [`${year}0615`, "Q2"],
-      [`${year}0915`, "Q3"],
-      [`${year + 1}0115`, "Q4"],
-    ];
-    const stamp = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-    const events = dates
-      .map(
-        ([date, label], i) => `BEGIN:VEVENT
-UID:trainerledger-${year}-${label}-${i}@trainerledger
-DTSTAMP:${stamp}
-DTSTART;VALUE=DATE:${date}
-SUMMARY:Estimated tax payment due (${label}) — ~$${amount}
-DESCRIPTION:Estimated quarterly tax payment from TrainerLedger. This is a planning estimate\\, not formal tax advice.
-END:VEVENT`
-      )
-      .join("\n");
-    const ics = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//TrainerLedger//Quarterly Tax Calendar//EN
-CALSCALE:GREGORIAN
-${events}
-END:VCALENDAR`;
-    const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `trainerledger-quarterly-taxes-${year}.ics`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  const downloadIcs = () => downloadQuarterlyIcs(results.quarterlyPayment);
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1.15fr_.85fr]">
@@ -603,6 +571,15 @@ END:VCALENDAR`;
                   a sign-in link would either hijack the host page's iframe or 404
                   against the host's own domain, and it doesn't belong there anyway. */}
               {!embed && <SaveEstimateButton inputs={inputs} results={results} />}
+
+              {!embed && (
+                <Link
+                  href="/dashboard"
+                  className="mt-3 block rounded-full border border-white/25 py-3 text-center text-sm font-semibold text-white transition hover:bg-white/10"
+                >
+                  See the full breakdown
+                </Link>
+              )}
 
               <div className="mt-8 space-y-3.5 border-y border-white/15 py-6 text-sm">
                 <ResultRow label="Net self-employment profit" value={results.netSeProfit} />

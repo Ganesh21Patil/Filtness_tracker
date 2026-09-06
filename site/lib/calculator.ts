@@ -205,3 +205,58 @@ export function calculateTaxes(inputs: TaxInputs): TaxResults {
     qbiAboveSimpleThreshold,
   };
 }
+
+/**
+ * UPDATE ANNUALLY — alongside TAX_CONFIG above.
+ *
+ * Source: U.S. Bureau of Labor Statistics, Occupational Employment and Wage
+ * Statistics (OEWS), May 2025, SOC 39-9031 "Exercise Trainers and Group
+ * Fitness Instructors". https://www.bls.gov/oes/current/oes399031.htm
+ *
+ * Every figure below was checked against bls.gov before shipping. A fourth
+ * figure often quoted alongside these (total national employment) was left
+ * out deliberately: it could not be confirmed from the source, and nothing
+ * in the product uses it.
+ *
+ * IMPORTANT, and stated on screen wherever these appear: OEWS covers
+ * EMPLOYED trainers and includes part-time roles, so it is not a
+ * like-for-like comparison against a self-employed trainer's gross
+ * training income. It is rough context, not a peer benchmark.
+ */
+export const BLS_TRAINER_WAGES = {
+  SOC_CODE: "39-9031",
+  OCCUPATION: "Exercise Trainers and Group Fitness Instructors",
+  REFERENCE: "May 2025",
+  SOURCE_URL: "https://www.bls.gov/oes/current/oes399031.htm",
+  PERCENTILE_10: 28800,
+  MEDIAN: 47160,
+  PERCENTILE_90: 83100,
+};
+
+/** Total deductible dollars, with mileage converted at each half-year's rate.
+ *  Shared so the calculator and the dashboard can never disagree. */
+export function sumDeductions(d: TaxInputs["deductions"]): number {
+  return (
+    d.certs +
+    d.liabilityIns +
+    d.gymRent +
+    d.equipment +
+    d.software +
+    d.mileageH1 * TAX_CONFIG.MILEAGE_RATE_H1 +
+    d.mileageH2 * TAX_CONFIG.MILEAGE_RATE_H2 +
+    d.apparel +
+    d.marketing +
+    d.homeOffice +
+    d.other
+  );
+}
+
+/** The four estimated-payment due dates for a tax year, in order. */
+export function quarterlyDueDates(year: number = TAX_CONFIG.TAX_YEAR) {
+  return [
+    { label: "Q1", date: new Date(year, 3, 15) },
+    { label: "Q2", date: new Date(year, 5, 15) },
+    { label: "Q3", date: new Date(year, 8, 15) },
+    { label: "Q4", date: new Date(year + 1, 0, 15) },
+  ];
+}
