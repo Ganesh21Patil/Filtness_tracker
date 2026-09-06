@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
+import { createClient } from "../lib/supabase/client";
+import { isSupabaseConfigured } from "../lib/supabase/config";
 
 const navLinks = [
   { href: "/calculator", label: "Calculator" },
@@ -19,7 +22,9 @@ function isActive(pathname: string, href: string) {
 export default function Header() {
   const [menu, setMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const pathname = usePathname() ?? "/";
+  const router = useRouter();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -41,8 +46,28 @@ export default function Header() {
     setMenu(false);
   }, [pathname]);
 
+  // Track auth state — inert (user stays null forever) until Supabase is configured.
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    const supabase = createClient();
+    if (!supabase) return;
+    supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null));
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null));
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  const signOut = async () => {
+    const supabase = createClient();
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    setUser(null);
+    router.refresh();
+  };
+
   // The /embed route is meant to be iframed onto other sites — no site chrome there.
   if (pathname.startsWith("/embed")) return null;
+
+  const firstName = user?.user_metadata?.full_name?.split(" ")?.[0] || user?.email?.split("@")[0];
 
   return (
     <header
@@ -73,6 +98,22 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
+          {isSupabaseConfigured && (
+            user ? (
+              <div className="hidden items-center gap-3 sm:flex">
+                <Link href="/saved-estimates" className="rounded text-sm text-offwhite/60 hover:text-offwhite">
+                  Hi, {firstName}
+                </Link>
+                <button type="button" onClick={signOut} className="rounded text-sm text-offwhite/80 hover:text-offwhite">
+                  Sign out
+                </button>
+              </div>
+            ) : (
+              <Link href="/auth/sign-in" className="hidden rounded text-sm text-offwhite/80 hover:text-offwhite sm:block">
+                Sign in
+              </Link>
+            )
+          )}
           <Link
             href="/calculator"
             className="hidden rounded-full bg-offwhite px-5 py-2.5 text-sm font-semibold text-ink transition hover:bg-accent sm:block"
@@ -104,6 +145,22 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
+            {isSupabaseConfigured && (
+              user ? (
+                <>
+                  <Link href="/saved-estimates" className="font-serif text-4xl tracking-[-.02em] text-offwhite">
+                    Saved estimates
+                  </Link>
+                  <button type="button" onClick={signOut} className="text-left font-serif text-4xl tracking-[-.02em] text-offwhite">
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <Link href="/auth/sign-in" className="font-serif text-4xl tracking-[-.02em] text-offwhite">
+                  Sign in
+                </Link>
+              )
+            )}
           </nav>
           <Link
             href="/calculator"
