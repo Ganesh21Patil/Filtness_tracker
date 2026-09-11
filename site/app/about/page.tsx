@@ -9,12 +9,12 @@ export const metadata: Metadata = {
 export default function About() {
   return (
     <main className="flex-1 bg-ink py-16 px-4 sm:px-6">
-      <div className="max-w-3xl mx-auto bg-cream text-inktext p-6 sm:p-10 rounded-[28px] shadow-[0_18px_50px_rgba(31,25,74,.1)]">
-        <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">&larr; Back to calculator</Link>
+      <div className="max-w-3xl mx-auto bg-cream text-inktext p-6 sm:p-10 rounded-[28px] shadow-card">
+        <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold">&larr; Back to calculator</Link>
 
         <h1 className="font-serif text-4xl sm:text-5xl tracking-[-.03em] mb-6">About &amp; methodology</h1>
 
-        <div className="space-y-6 text-[#413d57] leading-relaxed">
+        <div className="space-y-6 text-inksoft leading-relaxed">
           <p>This calculator is a free tool built for self-employed personal trainers, gym contractors, and fitness coaches in the US.</p>
 
           <div>
@@ -41,7 +41,7 @@ export default function About() {
             <p><strong className="text-inktext">This is an estimate for planning purposes, not tax or legal advice.</strong> We strongly recommend consulting with a certified public accountant (CPA) or enrolled agent (EA) before filing your taxes or making final estimated tax payments, especially if you have complex business structures or high income that may trigger additional rules.</p>
           </div>
 
-          <p className="text-sm text-[#8b869c] font-medium border-t border-[#e2deeb] pt-4">Last updated: September 2026 — corrected to 2026 figures (standard deduction, dual mileage rate, QBI minimum deduction, and 1099 thresholds under the One Big Beautiful Bill Act).</p>
+          <p className="text-sm text-inkmuted font-medium border-t border-line pt-4">Last updated: September 2026 — corrected to 2026 figures (standard deduction, dual mileage rate, QBI minimum deduction, and 1099 thresholds under the One Big Beautiful Bill Act).</p>
         </div>
       </div>
     </main>

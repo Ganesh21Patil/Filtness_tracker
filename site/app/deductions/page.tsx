@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function DeductionsPage() {
   return (
-    <main className="flex-1 overflow-hidden">
+    <main className="flex-1 overflow-x-clip">
       <section className="bg-ink px-6 py-16 lg:px-12">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="font-serif text-4xl sm:text-5xl tracking-[-.03em] text-offwhite mb-4">Deductions</h1>
@@ -18,8 +18,8 @@ export default function DeductionsPage() {
         </div>
       </section>
 
-      <section className="bg-cream px-6 py-16 lg:px-12">
-        <div className="mx-auto max-w-7xl">
+      <section className="bg-cream py-16">
+        <div className="shell">
           <Calculator />
         </div>
       </section>

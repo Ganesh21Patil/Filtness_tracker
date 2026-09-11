@@ -44,7 +44,7 @@ export default function EmbedSnippet() {
         <button
           type="button"
           onClick={copy}
-          className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-ink transition hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-light"
+          className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-ink transition hover:bg-white"
         >
           {status === "copied" ? "Copied!" : status === "failed" ? "Select & copy manually" : "Copy"}
         </button>

@@ -15,7 +15,7 @@ export default function DashboardPage() {
       <div className="mx-auto max-w-3xl">
         <Link
           href="/calculator"
-          className="mb-6 inline-flex min-h-[44px] items-center rounded font-semibold text-accent-deep hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          className="mb-6 inline-flex min-h-[44px] items-center rounded font-semibold text-accent-light hover:underline"
         >
           &larr; Back to calculator
         </Link>

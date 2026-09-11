@@ -9,12 +9,12 @@ export const metadata: Metadata = {
 export default function Privacy() {
   return (
     <main className="flex-1 bg-ink py-16 px-4 sm:px-6">
-      <div className="max-w-3xl mx-auto bg-cream text-inktext p-6 sm:p-10 rounded-[28px] shadow-[0_18px_50px_rgba(31,25,74,.1)]">
-        <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">&larr; Back to calculator</Link>
+      <div className="max-w-3xl mx-auto bg-cream text-inktext p-6 sm:p-10 rounded-[28px] shadow-card">
+        <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold">&larr; Back to calculator</Link>
 
         <h1 className="font-serif text-4xl sm:text-5xl tracking-[-.03em] mb-6">Privacy policy</h1>
 
-        <div className="space-y-6 text-[#413d57] leading-relaxed">
+        <div className="space-y-6 text-inksoft leading-relaxed">
           <p>TrainerLedger works two ways: use it anonymously and your numbers never leave your device, or sign in to save estimates for later — the choice is yours, and each mode does exactly what it says.</p>
 
           <div>
@@ -56,7 +56,7 @@ export default function Privacy() {
             <p>Our guides link to external resources, including irs.gov. Once you leave TrainerLedger, that site&apos;s own privacy policy applies.</p>
           </div>
 
-          <p className="text-sm text-[#8b869c] font-medium border-t border-[#e2deeb] pt-4">Last updated: September 2026 — added the optional sign-in and saved-estimates sections above now that the feature is live.</p>
+          <p className="text-sm text-inkmuted font-medium border-t border-line pt-4">Last updated: September 2026 — added the optional sign-in and saved-estimates sections above now that the feature is live.</p>
         </div>
       </div>
     </main>

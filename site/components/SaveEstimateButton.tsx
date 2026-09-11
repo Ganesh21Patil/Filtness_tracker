@@ -27,7 +27,7 @@ export default function SaveEstimateButton({ inputs, results }: { inputs: TaxInp
 
   if (!user) {
     return (
-      <Link href="/auth/sign-in" className="mt-3 block text-center text-xs text-[#a9dff4] hover:underline">
+      <Link href="/auth/sign-in" className="mt-3 block text-center text-xs text-accent-light hover:underline">
         Sign in to save this estimate
       </Link>
     );
@@ -51,7 +51,7 @@ export default function SaveEstimateButton({ inputs, results }: { inputs: TaxInp
       type="button"
       onClick={save}
       disabled={status === "saving" || status === "saved"}
-      className="mt-3 w-full text-center text-xs font-semibold text-[#a9dff4] hover:text-white disabled:opacity-70"
+      className="mt-3 w-full text-center text-xs font-semibold text-accent-light hover:text-white disabled:opacity-70"
     >
       {status === "saved" ? "Saved ✓" : status === "saving" ? "Saving…" : status === "error" ? "Couldn't save — try again" : "Save this estimate"}
     </button>

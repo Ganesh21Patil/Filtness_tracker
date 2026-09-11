@@ -9,10 +9,10 @@ export const metadata: Metadata = {
 export default function Guide1099Threshold() {
   return (
     <main className="flex-1 bg-ink py-16 px-4 sm:px-6">
-      <div className="max-w-3xl mx-auto bg-cream text-inktext p-6 sm:p-10 rounded-[28px] shadow-[0_18px_50px_rgba(31,25,74,.1)]">
-        <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">&larr; Back to calculator</Link>
+      <div className="max-w-3xl mx-auto bg-cream text-inktext p-6 sm:p-10 rounded-[28px] shadow-card">
+        <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold">&larr; Back to calculator</Link>
         <h1 className="font-serif text-4xl sm:text-5xl tracking-[-.03em] mb-6">What the new $2,000 1099 threshold means for trainers</h1>
-        <div className="space-y-6 text-[#413d57] leading-relaxed">
+        <div className="space-y-6 text-inksoft leading-relaxed">
           <p>Starting with tax year 2026, clients and studios don&apos;t have to send you a Form 1099-NEC unless they paid you $2,000 or more during the year — up from the old $600 threshold. Payment apps like Venmo, PayPal, and Stripe only issue a 1099-K once you cross $20,000 <em>and</em> 200 transactions, reverting to the pre-2022 rule.</p>
 
           <div>
@@ -30,7 +30,7 @@ export default function Guide1099Threshold() {
             </ul>
           </div>
 
-          <p className="text-sm text-[#8b869c] font-medium border-t border-[#e2deeb] pt-4">See also: <Link href="/about" className="text-accent-deep hover:underline">our methodology</Link> and the <Link href="/guides/personal-trainer-tax-deductions" className="text-accent-deep hover:underline">deductions guide</Link>. Last updated: September 2026.</p>
+          <p className="text-sm text-inkmuted font-medium border-t border-line pt-4">See also: <Link href="/about" className="text-accent-deep hover:underline">our methodology</Link> and the <Link href="/guides/personal-trainer-tax-deductions" className="text-accent-deep hover:underline">deductions guide</Link>. Last updated: September 2026.</p>
         </div>
       </div>
     </main>

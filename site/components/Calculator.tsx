@@ -7,15 +7,15 @@ import Link from "next/link";
 import { downloadQuarterlyIcs } from "../lib/ics";
 
 const inputBaseClass =
-  "w-full rounded-xl border border-[#e2deeb] bg-white p-4 min-h-[44px] text-[17px] font-medium text-inktext transition-colors focus:outline-none focus:border-accent-deep focus:ring-2 focus:ring-accent-deep/15";
+  "w-full rounded-xl border border-linestrong bg-white p-4 min-h-[44px] text-[17px] font-medium text-inktext transition-colors focus:outline-none focus:border-accent-deep focus:ring-2 focus:ring-accent-deep/20";
 
 // Flip to true once real ads are wired up.
 const AD_SLOT_ENABLED = false;
 
 function AdSlot() {
   return (
-    <div className="w-full p-4 border-2 border-dashed border-[#e2deeb] bg-[#faf9f7] text-center rounded-xl flex items-center justify-center min-h-[100px]">
-      <span className="text-[#a29cb3] text-sm font-medium">Advertisement Slot (Future)</span>
+    <div className="w-full p-4 border-2 border-dashed border-line bg-cream2 text-center rounded-xl flex items-center justify-center min-h-[100px]">
+      <span className="text-inkmuted text-sm font-medium">Advertisement Slot (Future)</span>
     </div>
   );
 }
@@ -161,8 +161,8 @@ function SectionHeading({ n, title, done, children }: { n: number; title: string
     <div className="flex items-start gap-3">
       <span
         aria-hidden="true"
-        className={`mt-0.5 grid size-6 flex-shrink-0 place-items-center rounded-full text-[11px] font-bold transition-colors ${
-          done ? "bg-accent-deep text-white" : "bg-[#efecf5] text-[#8b869c]"
+        className={`mt-0.5 grid size-6 flex-shrink-0 place-items-center rounded-full text-xs font-bold transition-colors ${
+          done ? "bg-accent-deep text-white" : "bg-line text-inkmuted"
         }`}
       >
         {done ? "✓" : n}
@@ -328,20 +328,20 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
   return (
     <div className="grid gap-8 lg:grid-cols-[1.15fr_.85fr]">
       {/* Form */}
-      <div className="print:hidden rounded-[28px] bg-white p-6 shadow-[0_18px_50px_rgba(31,25,74,.1)] md:p-9 space-y-9">
+      <div className="print:hidden rounded-[28px] bg-white p-6 shadow-card md:p-9 space-y-9">
         <section>
           <SectionHeading n={1} title="About your work" done={workType !== null}>
-            <p className="mt-1 text-sm text-[#66617a]">This just decides which fields you see. Nothing is locked away.</p>
+            <p className="mt-1 text-sm text-inkmuted">This just decides which fields you see. Nothing is locked away.</p>
           </SectionHeading>
 
           <fieldset className="mt-5">
-            <legend className="mb-2 text-[13px] font-semibold text-[#413d57]">What kind of training work do you do?</legend>
+            <legend className="mb-2 text-[13px] font-semibold text-inksoft">What kind of training work do you do?</legend>
             <div className="grid gap-2 sm:grid-cols-2">
               {WORK_TYPES.map((w) => (
                 <label
                   key={w.id}
-                  className={`cursor-pointer rounded-[14px] border p-3 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent ${
-                    workType === w.id ? "border-accent-deep bg-accent-deep/[.06]" : "border-[#e7e3ee] hover:border-accent-deep/60"
+                  className={`cursor-pointer rounded-[14px] border p-3 transition has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[color:var(--ring)] ${
+                    workType === w.id ? "border-accent-deep bg-accent-deep/[.06]" : "border-line hover:border-accent-deep/60"
                   }`}
                 >
                   <input
@@ -353,14 +353,14 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
                     className="sr-only"
                   />
                   <span className="block text-[13px] font-semibold text-inktext">{w.label}</span>
-                  <span className="mt-0.5 block text-[11px] leading-tight text-[#777287]">{w.hint}</span>
+                  <span className="mt-0.5 block text-xs leading-tight text-inkmuted">{w.hint}</span>
                 </label>
               ))}
             </div>
           </fieldset>
 
           <div className="mt-5">
-            <label htmlFor="filingStatus" className="block text-[13px] font-semibold text-[#413d57] mb-2">
+            <label htmlFor="filingStatus" className="block text-[13px] font-semibold text-inksoft mb-2">
               Filing status
             </label>
             <select
@@ -378,14 +378,14 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
             <button
               type="button"
               onClick={fillTypical}
-              className="text-xs font-semibold text-accent-deep hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
+              className="text-xs font-semibold text-accent-deep hover:underline rounded"
             >
               Not sure? Fill typical trainer numbers
             </button>
             <button
               type="button"
               onClick={() => setShowAllFields((v) => !v)}
-              className="text-xs font-semibold text-[#66617a] hover:text-accent-deep hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
+              className="text-xs font-semibold text-inkmuted hover:text-accent-deep hover:underline rounded"
             >
               {showAllFields ? "Use the guided view" : "Show all fields"}
             </button>
@@ -398,7 +398,7 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
           <div className="mt-5 grid gap-5 sm:grid-cols-2">
             {showW2Section && (
               <div className={workType === "hybrid" ? "sm:order-2" : undefined}>
-                <label htmlFor="w2Wages" className="block text-[13px] font-semibold text-[#413d57] mb-2">Annual W-2 wages</label>
+                <label htmlFor="w2Wages" className="block text-[13px] font-semibold text-inksoft mb-2">Annual W-2 wages</label>
                 <input
                   id="w2Wages"
                   type="number"
@@ -415,7 +415,7 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
               </div>
             )}
             <div className={workType === "hybrid" ? "sm:order-1" : undefined}>
-              <label htmlFor="gross1099" className="block text-[13px] font-semibold text-[#413d57] mb-2">Gross training income</label>
+              <label htmlFor="gross1099" className="block text-[13px] font-semibold text-inksoft mb-2">Gross training income</label>
               <input
                 id="gross1099"
                 type="number"
@@ -432,16 +432,16 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
             </div>
           </div>
           {workType === "hybrid" && (
-            <p className="mt-4 text-xs leading-relaxed text-[#413d57] bg-accent-deep/[.06] border border-accent-deep/20 rounded-lg p-3">
+            <p className="mt-4 text-xs leading-relaxed text-inksoft bg-accent-deep/[.06] border border-accent-deep/20 rounded-lg p-3">
               <strong>Both boxes matter for you.</strong> Your gym already withheld Social Security on the W-2 side, so entering those wages stops the calculator from charging you that portion twice on your private-client income.
             </p>
           )}
-          <p className="mt-4 text-xs leading-relaxed text-[#8b869c] bg-[#faf9f7] border border-[#e2deeb] rounded-lg p-3">
-            <strong className="text-[#413d57]">Not receiving a 1099 doesn&apos;t mean it isn&apos;t taxable.</strong> For 2026, clients don&apos;t have to send you a 1099-NEC unless they paid you $2,000+ (up from $600), and payment apps only issue a 1099-K above $20,000 and 200 transactions. Track and report all your training income yourself, regardless of what forms show up.
+          <p className="mt-4 text-xs leading-relaxed text-inkmuted bg-cream2 border border-line rounded-lg p-3">
+            <strong className="text-inksoft">Not receiving a 1099 doesn&apos;t mean it isn&apos;t taxable.</strong> For 2026, clients don&apos;t have to send you a 1099-NEC unless they paid you $2,000+ (up from $600), and payment apps only issue a 1099-K above $20,000 and 200 transactions. Track and report all your training income yourself, regardless of what forms show up.
           </p>
           {showW2Section && (
             <div className="mt-5">
-              <label htmlFor="w2Withheld" className="block text-[13px] font-semibold text-[#413d57] mb-2">Tax already withheld from W-2</label>
+              <label htmlFor="w2Withheld" className="block text-[13px] font-semibold text-inksoft mb-2">Tax already withheld from W-2</label>
               <input
                 id="w2Withheld"
                 type="number"
@@ -460,24 +460,26 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
         </section>
 
         {/* Deductions */}
-        <section id="deductions" className="border-t border-[#e9e6f1] pt-7 scroll-mt-24">
+        <section id="deductions" className="border-t border-line pt-7 scroll-mt-24">
           <SectionHeading n={3} title="Your deductions" done={deductionsSum > 0}>
-            <p className="mt-1 text-sm text-[#66617a]">Most trainers miss at least one.</p>
+            <p className="mt-1 text-sm text-inkmuted">Most trainers miss at least one.</p>
           </SectionHeading>
 
           <div className="mt-4 flex items-end justify-between gap-4">
-            <p className="max-w-[24ch] text-xs text-[#8b869c]">
+            <p className="max-w-[24ch] text-xs text-inkmuted">
               {workType === null
                 ? "Pick a work type above and this list narrows to what applies to you."
                 : "Showing what usually applies to your setup."}
             </p>
             <div className="whitespace-nowrap text-right">
               <p className="text-sm font-semibold text-accent-deep">{money(deductionsSum)} found</p>
-              {estimatedSavings > 0 && <p className="text-xs text-[#66617a]">≈ {money(estimatedSavings)} saved</p>}
+              {estimatedSavings > 0 && <p className="text-xs text-inkmuted">≈ {money(estimatedSavings)} saved</p>}
             </div>
           </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          {/* One column between lg and xl: the form column is only ~530px wide
+              there, and two cards per row squeezed labels onto four lines. */}
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
             {visibleDeductions.map((key) => {
               const field = DEDUCTION_FIELDS.find((f) => f.key === key)!;
               return (
@@ -502,7 +504,7 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
             <button
               type="button"
               onClick={() => setShowAllFields(true)}
-              className="mt-4 w-full rounded-[14px] border border-dashed border-[#d9d4e6] py-3 text-sm font-semibold text-accent-deep transition hover:border-accent-deep/60 hover:bg-accent-deep/[.04] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              className="mt-4 w-full rounded-[14px] border border-dashed border-line py-3 text-sm font-semibold text-accent-deep transition hover:border-accent-deep/60 hover:bg-accent-deep/[.04]"
             >
               Show {hiddenDeductionCount} more {hiddenDeductionCount === 1 ? "deduction" : "deductions"} — most trainers miss at least one
             </button>
@@ -514,8 +516,11 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
         {AD_SLOT_ENABLED && <AdSlot />}
       </div>
 
-      {/* Results */}
-      <aside className="print:col-span-2 relative overflow-hidden rounded-[28px] bg-deep p-7 text-white md:p-9 lg:sticky lg:top-6">
+      {/* Results. lg:self-start matters: grid items stretch to the row height
+          by default, and a stretched item has no room to stick — the panel
+          scrolled away and left an empty block beside the deductions.
+          top-24 clears the 72px sticky header. */}
+      <aside className="print:col-span-2 relative overflow-hidden rounded-[28px] bg-deep p-7 text-white md:p-9 lg:sticky lg:top-24 lg:self-start">
         <div className="pointer-events-none absolute -right-20 -top-16 size-64 rounded-full bg-accent/20 blur-3xl" />
         <div className={`relative flex flex-col ${hasIncome ? "min-h-[420px]" : ""}`}>
           <div className="flex items-center justify-between">
@@ -546,16 +551,18 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
               )}
 
               {/* Quarterly payment is the most actionable number on the page — it's what a trainer actually has to go do something about four times a year. */}
-              <p className="mt-8 text-xs font-semibold uppercase tracking-[.18em] text-[#a9dff4]">Your quarterly payment</p>
+              <p className="mt-8 text-xs font-semibold uppercase tracking-[.18em] text-accent-light">Your quarterly payment</p>
               <p key={results.quarterlyPayment} className="value-pop mt-1 font-serif text-6xl md:text-7xl tracking-[-.06em] tabular-nums">
                 {money(results.quarterlyPayment)}
               </p>
-              <p className="mt-2 text-sm text-[#cac7e6]">
+              <p className="mt-2 text-sm text-haze">
                 Due <strong className="text-white">Apr 15, Jun 15, Sep 15 &amp; Jan 15</strong> — {money(results.amountOwed)} estimated total for the year
               </p>
 
-              <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                <button type="button" onClick={downloadIcs} className="flex-1 rounded-full bg-accent py-3.5 font-semibold text-[#121127] transition hover:bg-white">
+              {/* Side by side only while the panel is full-width (below lg); in
+                  the narrow desktop column the calendar label wrapped inside its pill. */}
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row lg:flex-col">
+                <button type="button" onClick={downloadIcs} className="flex-1 rounded-full bg-accent py-3.5 font-semibold text-ink transition hover:bg-white">
                   Add due dates to calendar (.ics)
                 </button>
                 {/* Printing from inside a third-party site's iframe is unpredictable
@@ -584,7 +591,7 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
               <div className="mt-8 space-y-3.5 border-y border-white/15 py-6 text-sm">
                 <ResultRow label="Net self-employment profit" value={results.netSeProfit} />
                 <ResultRow label="Total SE tax" value={results.seTax.total} />
-                <ResultRow label="Federal income tax" value={results.federalTax} accent />
+                <ResultRow label="Federal income tax" value={results.federalTax} />
                 {inputs.w2Withheld > 0 && <ResultRow label="W-2 tax already withheld" value={-inputs.w2Withheld} />}
                 <ResultRow label="Total estimated liability" value={results.totalLiability} bold />
               </div>
@@ -593,14 +600,14 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
 
               {/* TODO: LLC vs S-Corp savings indicator — needs CPA-reviewed logic before shipping real numbers */}
               {results.netSeProfit > 80000 && (
-                <p className="mt-6 text-xs text-center text-[#cac7e6]">
+                <p className="mt-6 text-xs text-center text-haze">
                   💡 You&apos;re earning enough that an S-Corp might save you money. (Comparison coming soon)
                 </p>
               )}
             </div>
           )}
 
-          <p className="mt-6 text-center text-xs leading-relaxed text-[#a7a2c8]">
+          <p className="mt-6 text-center text-xs leading-relaxed text-dusk">
             For planning purposes only — not formal tax or legal advice.
           </p>
         </div>
@@ -618,15 +625,15 @@ function TaxBreakdownBar({ w2Wages, gross1099, seTax, federalTax, money }: { w2W
 
   return (
     <div className="mt-6">
-      <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#a9dff4] mb-3">Where your income goes</p>
+      <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-light mb-3">Where your income goes</p>
       <div className="flex h-3 w-full overflow-hidden rounded-full bg-white/10" role="img" aria-label={`${seTaxPct.toFixed(0)}% self-employment tax, ${fedTaxPct.toFixed(0)}% federal tax, ${takeHomePct.toFixed(0)}% take-home`}>
         <div className="h-full bg-accent" style={{ width: `${seTaxPct}%` }} />
-        <div className="h-full bg-[#66d8f1]/60" style={{ width: `${fedTaxPct}%` }} />
+        <div className="h-full bg-accent-soft/60" style={{ width: `${fedTaxPct}%` }} />
         <div className="h-full bg-white/25" style={{ width: `${takeHomePct}%` }} />
       </div>
-      <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-[#cac7e6]">
+      <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-haze">
         <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-accent" />SE tax {money(seTax)}</span>
-        <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-[#66d8f1]/60" />Federal tax {money(federalTax)}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-accent-soft/60" />Federal tax {money(federalTax)}</span>
         <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-white/40" />Take-home {money(Math.max(0, total - seTax - federalTax))}</span>
       </div>
     </div>
@@ -640,8 +647,8 @@ function EmptyResultsState() {
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
       </div>
       <p className="text-white font-semibold mb-1">Your estimate will appear here</p>
-      <p className="text-sm text-[#a7a2c8] max-w-[250px]">Add your income on the left and this panel fills in.</p>
-      <ul className="mt-5 w-full max-w-[250px] space-y-2 text-left text-xs text-[#a7a2c8]">
+      <p className="text-sm text-dusk max-w-[250px]">Add your income on the left and this panel fills in.</p>
+      <ul className="mt-5 w-full max-w-[250px] space-y-2 text-left text-xs text-dusk">
         {[
           "What to set aside each quarter",
           "The four IRS due dates, downloadable",
@@ -665,13 +672,13 @@ function InfoTooltip({ label, text }: { label: string; text: string }) {
       <button
         type="button"
         onClick={() => setShow((v) => !v)}
-        className="text-[#a7a2c8] hover:text-accent-light focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-full p-1.5 transition-colors"
+        className="text-dusk hover:text-accent-light rounded-full p-1.5 transition-colors"
         aria-label={label}
       >
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
       </button>
       {show && (
-        <div className="absolute z-50 w-56 p-3 mt-2 text-xs leading-relaxed text-[#413d57] bg-white border border-[#e7e3ee] rounded-lg shadow-lg right-0">
+        <div className="absolute z-50 w-56 p-3 mt-2 text-xs leading-relaxed text-inksoft bg-white border border-line rounded-lg shadow-lg right-0">
           {text}
         </div>
       )}
@@ -706,11 +713,11 @@ function DeductionInput({
   const money = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 
   return (
-    <div className="flex min-h-[84px] items-center justify-between gap-3 rounded-[14px] border border-[#e7e3ee] p-3.5 transition hover:border-accent-deep/60 hover:-translate-y-0.5 relative group">
+    <div className="flex min-h-[84px] items-center justify-between gap-3 rounded-[14px] border border-line p-3.5 transition-colors hover:border-accent-deep/60 relative group">
       <div className="flex flex-1 items-start gap-2">
         <div className="flex-1">
           <label htmlFor={id} className="block text-[13px] font-semibold text-inktext">{label}</label>
-          <p className="mt-0.5 text-[11px] leading-tight text-[#777287]">{hint}</p>
+          <p className="mt-0.5 text-xs leading-tight text-inkmuted">{hint}</p>
         </div>
         {tooltipText && (
           <div
@@ -721,17 +728,17 @@ function DeductionInput({
             <button
               type="button"
               onClick={() => setShowTooltip(!showTooltip)}
-              className="text-[#a29cb3] hover:text-accent-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-accent p-1.5 rounded-full transition-colors"
+              className="text-inkmuted hover:text-accent-deep p-1.5 rounded-full transition-colors"
               aria-label={`More information about ${label}`}
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </button>
 
             {showTooltip && (
-              <div className="absolute z-50 w-64 p-3 mt-2 text-sm text-[#413d57] bg-white border border-[#e7e3ee] rounded-lg shadow-lg right-0 sm:left-1/2 sm:right-auto sm:-translate-x-1/2">
+              <div className="absolute z-50 w-64 p-3 mt-2 text-sm text-inksoft bg-white border border-line rounded-lg shadow-lg right-0 sm:left-1/2 sm:right-auto sm:-translate-x-1/2">
                 <p className="leading-relaxed">{tooltipText}</p>
                 {learnMoreLink && (
-                  <a href={learnMoreLink} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 font-semibold text-accent-deep hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">
+                  <a href={learnMoreLink} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 font-semibold text-accent-deep hover:underline rounded">
                     Learn more
                   </a>
                 )}
@@ -741,8 +748,8 @@ function DeductionInput({
         )}
       </div>
       <div className="flex-shrink-0 text-right">
-        <div className="flex items-baseline gap-1 border-b border-[#ddd9e7] pb-1 min-h-[44px] items-center">
-          {prefix === "$" && <span className="text-[#a29cb3] text-sm">$</span>}
+        <div className="flex items-baseline gap-1 border-b border-linestrong pb-1 min-h-[44px] items-center">
+          {prefix === "$" && <span className="text-inkmuted text-sm">$</span>}
           <input
             id={id}
             type="number"
@@ -753,23 +760,23 @@ function DeductionInput({
             placeholder="0"
             aria-describedby={warning ? `${id}-warning` : undefined}
           />
-          {prefix !== "$" && <span className="text-[#a29cb3] text-xs">{prefix}</span>}
+          {prefix !== "$" && <span className="text-inkmuted text-xs">{prefix}</span>}
         </div>
         {warning ? (
-          <p id={`${id}-warning`} role="alert" className="text-[10px] text-red-600 mt-1">{warning}</p>
+          <p id={`${id}-warning`} role="alert" className="text-xs text-red-600 mt-1">{warning}</p>
         ) : savings && savings > 0.5 ? (
-          <p className="text-[10px] text-accent-deep mt-1">≈ {money(savings)} saved</p>
+          <p className="text-xs text-accent-deep mt-1">≈ {money(savings)} saved</p>
         ) : null}
       </div>
     </div>
   );
 }
 
-function ResultRow({ label, value, bold, accent }: { label: string; value: number; bold?: boolean; accent?: boolean }) {
+function ResultRow({ label, value, bold }: { label: string; value: number; bold?: boolean }) {
   return (
     <div className="flex justify-between items-center gap-3">
-      <span className="text-[#bab6d7]">{label}</span>
-      <span key={value} className={`value-pop tabular-nums ${bold ? "font-semibold text-white" : accent ? "text-[#66d8f1] font-semibold" : "font-medium text-[#e5e3f5]"}`}>
+      <span className="text-haze">{label}</span>
+      <span key={value} className={`value-pop tabular-nums ${bold ? "font-semibold text-white" : "font-medium text-offwhite"}`}>
         {value < 0 ? "− " : ""}
         {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Math.abs(value))}
       </span>

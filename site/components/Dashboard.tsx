@@ -155,7 +155,7 @@ export default function Dashboard() {
 
   const segments = [
     { label: "SE tax", value: results.seTax.total, className: "bg-accent" },
-    { label: "Federal tax", value: results.federalTax, className: "bg-[#66d8f1]/60" },
+    { label: "Federal tax", value: results.federalTax, className: "bg-accent-soft/60" },
     { label: "Business expenses", value: deductions, className: "bg-violet-300/50" },
     { label: "Take-home", value: takeHome, className: "bg-white/25" },
   ].map((s) => ({ ...s, share: grossIncome > 0 ? s.value / grossIncome : 0 }));
@@ -238,7 +238,7 @@ export default function Dashboard() {
       <Card>
         <div className="grid gap-6 sm:grid-cols-3">
           <div className="sm:col-span-1">
-            <p className="text-xs font-semibold uppercase tracking-[.18em] text-[#a9dff4]">Every quarter</p>
+            <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-light">Every quarter</p>
             <p className="mt-1 font-serif text-5xl tracking-[-.05em] tabular-nums">{money(results.quarterlyPayment)}</p>
           </div>
           <div>
@@ -267,12 +267,12 @@ export default function Dashboard() {
         <dl className="mt-5 grid gap-3 sm:grid-cols-2">
           {segments.map((s) => (
             <div key={s.label} className="flex items-baseline justify-between gap-3 text-sm">
-              <dt className="inline-flex items-center gap-2 text-[#cac7e6]">
+              <dt className="inline-flex items-center gap-2 text-haze">
                 <span aria-hidden="true" className={`size-2.5 flex-shrink-0 rounded-full ${s.className}`} />
                 {s.label}
               </dt>
               <dd className="tabular-nums font-medium">
-                {money(s.value)} <span className="text-offwhite/40">({pct(s.share)})</span>
+                {money(s.value)} <span className="text-offwhite/60">({pct(s.share)})</span>
               </dd>
             </div>
           ))}
@@ -298,7 +298,7 @@ export default function Dashboard() {
           {/* Each label is pinned to its own tick's percentage, so the two can
               never drift apart. The end labels shift inward instead of
               centring so they don't hang off the edge of the card. */}
-          <div className="relative mt-2 h-8 text-[11px] text-offwhite/50">
+          <div className="relative mt-2 h-8 text-xs text-offwhite/50">
             {BLS_MARKERS.map((m) => {
               const p = markerPct(m.value);
               return (
@@ -318,7 +318,7 @@ export default function Dashboard() {
             })}
           </div>
           {aboveScale && (
-            <p className="text-[11px] text-offwhite/50">
+            <p className="text-xs text-offwhite/50">
               Your income is past the end of this scale, so the marker sits at the edge.
             </p>
           )}
@@ -328,7 +328,7 @@ export default function Dashboard() {
           includes part-time roles, so those figures aren&apos;t measuring the same thing as a self-employed trainer&apos;s
           gross training income.
         </p>
-        <p className="mt-3 text-xs text-offwhite/40">
+        <p className="mt-3 text-xs text-offwhite/60">
           Source: U.S. Bureau of Labor Statistics, Occupational Employment and Wage Statistics,{" "}
           {BLS_TRAINER_WAGES.REFERENCE}, SOC {BLS_TRAINER_WAGES.SOC_CODE}.{" "}
           <a href={BLS_TRAINER_WAGES.SOURCE_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-offwhite/70">
@@ -352,7 +352,7 @@ export default function Dashboard() {
               // The label takes its own line on a phone: sharing one row with
               // a fixed-width label and value left the bar ~14px wide at 360px.
               <div key={c.key} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                <dt className="w-full flex-shrink-0 truncate text-[#cac7e6] sm:w-40">{c.label}</dt>
+                <dt className="w-full flex-shrink-0 truncate text-haze sm:w-40">{c.label}</dt>
                 <dd className="flex flex-1 items-center gap-3">
                   <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
                     <span className="block h-full rounded-full bg-accent/70" style={{ width: `${(c.value / topCategories[0].value) * 100}%` }} />
@@ -372,7 +372,7 @@ export default function Dashboard() {
             </p>
             <ul className="mt-3 space-y-2">
               {untouched.map((u) => (
-                <li key={u.key} className="text-sm text-[#cac7e6]">
+                <li key={u.key} className="text-sm text-haze">
                   <span className="font-medium text-offwhite">{u.label}.</span> {u.note}
                 </li>
               ))}
@@ -401,7 +401,7 @@ export default function Dashboard() {
                 <span className="text-sm">
                   <span className="font-semibold">{date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
                   {isNext && <span className="ml-2 text-xs font-semibold text-accent-light">next · in {days} {days === 1 ? "day" : "days"}</span>}
-                  {passed && <span className="ml-2 text-xs text-offwhite/40">passed</span>}
+                  {passed && <span className="ml-2 text-xs text-offwhite/60">passed</span>}
                 </span>
                 <span className="tabular-nums font-semibold">{money(results.quarterlyPayment)}</span>
               </li>
@@ -421,7 +421,7 @@ export default function Dashboard() {
       {/* 6. WHAT IF */}
       {!isSavedView && (
         <Card title="What if you earned more?">
-          <label htmlFor="scenario-income" className="block text-sm text-[#cac7e6]">
+          <label htmlFor="scenario-income" className="block text-sm text-haze">
             Training income
             <span className="ml-2 font-semibold text-offwhite tabular-nums">{money(scenarioIncome ?? inputs.gross1099)}</span>
           </label>
@@ -435,7 +435,7 @@ export default function Dashboard() {
             onChange={(e) => setScenarioIncome(Number(e.target.value))}
             // h-11 keeps the drag target at 44px on touch; the track itself
             // still renders at its natural height inside it.
-            className="mt-3 h-11 w-full cursor-pointer accent-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            className="mt-3 h-11 w-full cursor-pointer accent-accent"
           />
           <p className="mt-2 text-xs text-offwhite/50">Keeps your current deductions and filing status. One variable at a time.</p>
 
@@ -459,7 +459,7 @@ export default function Dashboard() {
         </Card>
       )}
 
-      <p className="px-2 text-center text-xs leading-relaxed text-[#a7a2c8]">
+      <p className="px-2 text-center text-xs leading-relaxed text-dusk">
         For planning purposes only — not formal tax or legal advice.
       </p>
     </div>

@@ -9,12 +9,56 @@
   body {
     @apply bg-ink text-offwhite antialiased font-sans;
   }
-  button:focus-visible,
+
+  /* The focus ring follows its surface: cyan on dark, deep teal on light.
+     Cyan on white is only 2:1, so a single global colour can't pass on both.
+     --ring inherits, so the nearest surface wins — a dark results panel
+     inside a cream section gets cyan, a cream article on a dark page gets
+     teal — with no per-component classes. */
+  :root,
+  .bg-ink,
+  .bg-ink2,
+  .bg-panel,
+  .bg-deep,
+  .bg-deep2,
+  .bg-deep3 {
+    --ring: theme("colors.accent.DEFAULT");
+  }
+  .bg-cream,
+  .bg-cream2,
+  .bg-white {
+    --ring: theme("colors.accent.deep");
+  }
+
+  /* Element-qualified on purpose: (0,1,1) still beats a bare .outline-none
+     but loses to focus:outline-none, for components that draw their own ring. */
   a:focus-visible,
+  button:focus-visible,
   input:focus-visible,
-  select:focus-visible {
-    outline: 2px solid #00c7ef;
+  select:focus-visible,
+  textarea:focus-visible,
+  summary:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--ring);
     outline-offset: 3px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@layer components {
+  /* One page container for every full-width band, so the header logo,
+     section content, and footer share a left edge at every width.
+     1376 = 1280px of content + 2 × 48px gutters. */
+  .shell {
+    @apply mx-auto w-full max-w-[1376px] px-6 lg:px-12;
   }
 }
 

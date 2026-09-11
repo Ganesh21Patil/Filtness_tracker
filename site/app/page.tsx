@@ -46,12 +46,12 @@ export default function Home() {
   };
 
   return (
-    <main className="flex-1 overflow-hidden">
+    <main className="flex-1 overflow-x-clip">
       {/* eslint-disable-next-line react/no-danger */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
       {/* HERO */}
-      <section id="top" className="relative mx-auto grid min-h-[720px] max-w-[1440px] items-center px-6 pb-16 pt-10 lg:grid-cols-[1.1fr_.9fr] lg:px-12">
+      <section id="top" className="shell relative grid min-h-[720px] items-center pb-16 pt-10 lg:grid-cols-[1.1fr_.9fr]">
         <div className="pointer-events-none absolute bottom-0 right-[10%] size-80 rounded-full bg-accent/15 blur-[110px]" />
 
         <div className="relative z-10 max-w-3xl">
@@ -62,7 +62,7 @@ export default function Home() {
             A free tax estimate built for independent trainers, gym contractors, and hybrid coaches. Put your income, deductions, and next move in one clear view.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
-            <a href="#calculator" className="rounded-full bg-accent px-6 py-3.5 font-semibold text-ink transition hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,199,239,.25)]">
+            <a href="#calculator" className="rounded-full bg-accent px-6 py-3.5 font-semibold text-ink transition hover:-translate-y-1 hover:shadow-glow">
               Calculate my taxes
             </a>
             <Link href="/guides" className="rounded-full border border-white/20 px-6 py-3.5 font-semibold transition hover:bg-white/10">
@@ -72,8 +72,8 @@ export default function Home() {
         </div>
 
         <div className="relative mx-auto mt-16 h-[510px] w-full max-w-md lg:mt-0">
-          <div className="animate-float-card absolute -left-10 top-10 z-10 rounded-2xl border border-white/15 bg-panel/90 p-4 backdrop-blur">
-            <p className="text-[10px] uppercase tracking-[.18em] text-offwhite/60">Quarterly reserve</p>
+          <div className="animate-float-card absolute left-0 top-10 z-10 sm:-left-10 rounded-2xl border border-white/15 bg-panel/90 p-4 backdrop-blur">
+            <p className="text-xs uppercase tracking-[.18em] text-offwhite/60">Quarterly reserve</p>
             <p className="mt-1 text-2xl font-semibold tabular-nums">{money(Math.round(heroPreview.quarterlyPayment))}</p>
             <div className="mt-2 h-1.5 w-32 overflow-hidden rounded bg-white/15">
               <div className="h-full w-[72%] rounded bg-accent" />
@@ -101,7 +101,7 @@ export default function Home() {
 
       {/* TRUST STRIP */}
       <section className="border-y border-white/10 bg-ink2 py-5">
-        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-center gap-x-8 gap-y-2 px-6 text-sm font-medium uppercase tracking-[.1em] text-offwhite/70 lg:px-12">
+        <div className="shell flex flex-wrap items-center justify-center gap-x-8 gap-y-2 text-sm font-medium uppercase tracking-[.1em] text-offwhite/70">
           {trustPoints.map((point) => (
             <span key={point}>{point}</span>
           ))}
@@ -109,8 +109,8 @@ export default function Home() {
       </section>
 
       {/* CALCULATOR */}
-      <section id="calculator" className="relative bg-cream px-6 py-24 text-inktext lg:px-12 scroll-mt-10">
-        <div className="mx-auto max-w-7xl">
+      <section id="calculator" className="relative scroll-mt-20 bg-cream py-24 text-inktext">
+        <div className="shell">
           <div className="mb-14 grid gap-6 md:grid-cols-[.7fr_1.3fr]">
             <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-deep">The calculator</p>
             <h2 className="max-w-3xl font-serif text-4xl leading-[.9] tracking-[-.05em] md:text-6xl">Know what you owe. Keep doing what you love.</h2>
@@ -120,7 +120,7 @@ export default function Home() {
       </section>
 
       {/* ABOUT */}
-      <section id="about" className="mx-auto grid max-w-[1440px] gap-12 px-6 py-24 lg:grid-cols-2 lg:px-12 scroll-mt-10">
+      <section id="about" className="shell grid scroll-mt-20 gap-12 py-24 lg:grid-cols-2">
         <div className="relative min-h-[400px] overflow-hidden rounded-[30px] bg-ink2 lg:min-h-[530px]">
           <Image
             src={trainerPortrait}
@@ -151,7 +151,7 @@ export default function Home() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="bg-cream px-6 py-24 text-inktext lg:px-12 scroll-mt-10">
+      <section id="faq" className="scroll-mt-20 bg-cream px-6 py-24 text-inktext lg:px-12">
         <div className="mx-auto max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-deep">Questions</p>
           <h2 className="mt-4 font-serif text-4xl leading-[.9] tracking-[-.05em] md:text-5xl">Good to know before you start.</h2>
@@ -160,8 +160,8 @@ export default function Home() {
       </section>
 
       {/* GUIDES */}
-      <section id="guides" className="bg-deep2 px-6 py-24 lg:px-12 scroll-mt-10">
-        <div className="mx-auto max-w-7xl">
+      <section id="guides" className="scroll-mt-20 bg-deep2 py-24">
+        <div className="shell">
           <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-light">The trainer ledger</p>
           <div className="mt-5 flex flex-wrap items-end justify-between gap-8">
             <h2 className="font-serif text-4xl leading-[.9] tracking-[-.05em] md:text-6xl">

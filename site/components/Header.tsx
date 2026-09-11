@@ -71,11 +71,14 @@ export default function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full transition-[padding,background-color,backdrop-filter,border-color] duration-300 ${
-        scrolled ? "border-b border-white/10 bg-ink/80 backdrop-blur-md py-3" : "border-b border-transparent bg-transparent py-6"
+      className={`sticky top-0 z-50 w-full border-b transition-[background-color,backdrop-filter,border-color] duration-300 ${
+        scrolled ? "border-white/10 bg-ink/80 backdrop-blur-md" : "border-transparent bg-transparent"
       }`}
     >
-      <div className="mx-auto flex w-full max-w-[1440px] items-center justify-between px-6 lg:px-12">
+      {/* Fixed height on purpose: animating padding on a sticky (in-flow)
+          header shifted the whole page 24px the moment you scrolled. Only the
+          background changes now. */}
+      <div className="shell flex h-[72px] items-center justify-between">
         <Link href="/" className="flex items-center gap-2 rounded text-xl font-semibold tracking-tight text-offwhite">
           <span className="grid size-8 place-items-center rounded-full bg-accent text-ink">✦</span>
           TrainerLedger

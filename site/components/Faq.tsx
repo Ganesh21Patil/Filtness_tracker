@@ -16,7 +16,7 @@ export default function Faq() {
     });
 
   return (
-    <div className="mt-12 divide-y divide-[#e2deeb] border-y border-[#e2deeb]">
+    <div className="mt-12 divide-y divide-line border-y border-line">
       {faqs.map(([question, answer], i) => {
         const isOpen = open.has(i);
         const panelId = `faq-panel-${i}`;
@@ -30,7 +30,7 @@ export default function Faq() {
                 aria-expanded={isOpen}
                 aria-controls={panelId}
                 onClick={() => toggle(i)}
-                className="flex w-full items-center justify-between gap-4 py-5 text-left text-lg font-semibold text-inktext transition-colors hover:text-accent-deep focus:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
+                className="flex w-full items-center justify-between gap-4 py-5 text-left text-lg font-semibold text-inktext transition-colors hover:text-accent-deep rounded"
               >
                 {question}
                 <svg
@@ -55,7 +55,7 @@ export default function Faq() {
               }`}
             >
               <div className="min-h-0">
-                <p className="pb-6 pr-8 leading-relaxed text-[#413d57]">{answer}</p>
+                <p className="pb-6 pr-8 leading-relaxed text-inksoft">{answer}</p>
               </div>
             </div>
           </div>

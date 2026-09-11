@@ -13,7 +13,7 @@ export default function Embed() {
   return (
     <main className="bg-cream text-inktext px-4 py-6 sm:px-6 sm:py-8">
       <Calculator embed />
-      <p className="mt-6 text-center text-xs text-[#8b869c]">
+      <p className="mt-6 text-center text-xs text-inkmuted">
         Powered by{" "}
         <Link href="/" target="_blank" rel="noopener noreferrer" className="font-semibold text-accent-deep hover:underline">
           TrainerLedger

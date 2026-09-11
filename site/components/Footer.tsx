@@ -48,13 +48,13 @@ export default function Footer() {
         <p className="mt-4 text-lg text-offwhite/75">Free, no signup — your numbers, your quarterly plan, right now.</p>
         <Link
           href="/calculator"
-          className="mt-8 inline-flex items-center justify-center rounded-full bg-accent px-8 py-3.5 font-semibold text-ink transition hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(0,199,239,.25)]"
+          className="mt-8 inline-flex items-center justify-center rounded-full bg-accent px-8 py-3.5 font-semibold text-ink transition hover:-translate-y-1 hover:shadow-glow"
         >
           Calculate my taxes
         </Link>
       </section>
 
-      <footer className="mx-auto w-full max-w-[1440px] px-6 py-12 text-sm text-offwhite/70 lg:px-12">
+      <footer className="shell py-12 text-sm text-offwhite/70">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-6">
           <div className="col-span-2">
             <Link href="/" className="rounded text-xl font-semibold text-offwhite">
