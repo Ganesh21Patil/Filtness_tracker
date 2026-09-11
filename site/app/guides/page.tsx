@@ -21,12 +21,12 @@ export default function GuidesIndex() {
       <div className="mx-auto max-w-3xl">
         <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-light hover:underline mb-6 rounded font-semibold">&larr; Back to calculator</Link>
 
-        <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-light">The trainer ledger</p>
+        <p className="eyebrow text-accent-light">The trainer ledger</p>
         <h1 className="mt-4 font-serif text-4xl sm:text-5xl tracking-[-.03em] text-offwhite mb-10">Guides</h1>
 
         <div className="space-y-4">
           {guides.map(([title, body, href]) => (
-            <Link key={href} href={href} className="group block rounded-[28px] bg-cream p-6 sm:p-8 text-inktext shadow-card transition hover:-translate-y-1">
+            <Link key={href} href={href} className="group block rounded-card bg-cream p-6 sm:p-8 text-inktext shadow-card transition hover:-translate-y-1">
               <h2 className="font-serif text-2xl sm:text-3xl">{title}</h2>
               <p className="mt-3 text-inksoft leading-relaxed">{body}</p>
               <span className="mt-4 inline-block text-sm font-semibold text-accent-deep">Read guide</span>

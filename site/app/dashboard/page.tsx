@@ -20,7 +20,7 @@ export default function DashboardPage() {
           &larr; Back to calculator
         </Link>
 
-        <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-light">Your breakdown</p>
+        <p className="eyebrow text-accent-light">Your breakdown</p>
         <h1 className="mb-10 mt-4 font-serif text-4xl tracking-[-.03em] text-offwhite sm:text-5xl">
           What this actually means
         </h1>

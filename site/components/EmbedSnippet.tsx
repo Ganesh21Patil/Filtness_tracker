@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { button } from "./ui";
 
 export default function EmbedSnippet() {
   const [origin, setOrigin] = useState("");
@@ -38,13 +39,13 @@ export default function EmbedSnippet() {
   };
 
   return (
-    <div className="rounded-2xl border border-white/15 bg-panel/60 p-4 sm:p-6">
+    <div className="rounded-tile border border-white/15 bg-panel/60 p-4 sm:p-6">
       <div className="flex items-center justify-between gap-3 mb-3">
-        <p className="text-xs font-semibold uppercase tracking-[.15em] text-accent-light">Embed snippet</p>
+        <p className="eyebrow text-accent-light">Embed snippet</p>
         <button
           type="button"
           onClick={copy}
-          className="rounded-full bg-accent px-4 py-2 text-xs font-semibold text-ink transition hover:bg-white"
+          className={button({ size: "sm" })}
         >
           {status === "copied" ? "Copied!" : status === "failed" ? "Select & copy manually" : "Copy"}
         </button>

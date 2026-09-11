@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "../lib/supabase/client";
 import { isSupabaseConfigured } from "../lib/supabase/config";
+import Logo from "./Logo";
+import { button } from "./ui";
+import { CloseIcon, MenuIcon } from "./icons";
 
 const navLinks = [
   { href: "/calculator", label: "Calculator" },
@@ -25,6 +28,8 @@ export default function Header() {
   const [user, setUser] = useState<User | null>(null);
   const pathname = usePathname() ?? "/";
   const router = useRouter();
+  const headerRef = useRef<HTMLElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -33,11 +38,25 @@ export default function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Lock body scroll while the full-screen mobile menu is open.
+  // While the full-screen mobile menu is open it behaves like a modal: body
+  // scroll is locked, everything outside the header is inert (Tab can't wander
+  // behind the overlay), and Escape closes it and returns focus to the toggle.
   useEffect(() => {
-    document.body.style.overflow = menu ? "hidden" : "";
+    if (!menu) return;
+    document.body.style.overflow = "hidden";
+    const header = headerRef.current;
+    const outside = Array.from(document.body.children).filter((el) => !el.contains(header));
+    outside.forEach((el) => el.setAttribute("inert", ""));
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setMenu(false);
+      toggleRef.current?.focus();
+    };
+    document.addEventListener("keydown", onKeyDown);
     return () => {
       document.body.style.overflow = "";
+      outside.forEach((el) => el.removeAttribute("inert"));
+      document.removeEventListener("keydown", onKeyDown);
     };
   }, [menu]);
 
@@ -71,6 +90,7 @@ export default function Header() {
 
   return (
     <header
+      ref={headerRef}
       className={`sticky top-0 z-50 w-full border-b transition-[background-color,backdrop-filter,border-color] duration-300 ${
         scrolled ? "border-white/10 bg-ink/80 backdrop-blur-md" : "border-transparent bg-transparent"
       }`}
@@ -79,10 +99,7 @@ export default function Header() {
           header shifted the whole page 24px the moment you scrolled. Only the
           background changes now. */}
       <div className="shell flex h-[72px] items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 rounded text-xl font-semibold tracking-tight text-offwhite">
-          <span className="grid size-8 place-items-center rounded-full bg-accent text-ink">✦</span>
-          TrainerLedger
-        </Link>
+        <Logo />
 
         <nav className="hidden items-center gap-8 text-sm md:flex">
           {navLinks.map((link) => {
@@ -117,27 +134,26 @@ export default function Header() {
               </Link>
             )
           )}
-          <Link
-            href="/calculator"
-            className="hidden rounded-full bg-offwhite px-5 py-2.5 text-sm font-semibold text-ink transition hover:bg-accent sm:block"
-          >
+          <Link href="/calculator" className={`${button({ variant: "inverse", size: "md" })} hidden sm:inline-flex`}>
             Try the calculator
           </Link>
           <button
+            ref={toggleRef}
             type="button"
-            aria-label="Toggle menu"
+            aria-label={menu ? "Close menu" : "Open menu"}
             aria-expanded={menu}
+            aria-controls="mobile-menu"
             onClick={() => setMenu((v) => !v)}
-            className="grid size-11 place-items-center rounded-full border border-white/20 text-offwhite md:hidden"
+            className="grid size-11 place-items-center rounded-full border border-white/20 text-offwhite transition-colors hover:bg-white/10 md:hidden"
           >
-            {menu ? "✕" : "☰"}
+            {menu ? <CloseIcon className="size-5" /> : <MenuIcon className="size-5" />}
           </button>
         </div>
       </div>
 
       {/* Full-screen mobile menu */}
       {menu && (
-        <div className="fixed inset-0 z-40 flex flex-col bg-ink px-8 pt-28 pb-10 md:hidden motion-safe:animate-[fade-in_180ms_ease-out]">
+        <div id="mobile-menu" className="fixed inset-0 z-40 flex flex-col bg-ink px-8 pt-28 pb-10 md:hidden motion-safe:animate-[fade-in_180ms_ease-out]">
           <nav className="flex flex-1 flex-col justify-center gap-8">
             {navLinks.map((link) => (
               <Link
@@ -165,10 +181,7 @@ export default function Header() {
               )
             )}
           </nav>
-          <Link
-            href="/calculator"
-            className="w-full rounded-full bg-accent py-4 text-center text-base font-semibold text-ink"
-          >
+          <Link href="/calculator" className={button({ size: "lg", full: true })}>
             Try the calculator
           </Link>
         </div>

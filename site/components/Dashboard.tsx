@@ -6,6 +6,8 @@ import type { User } from "@supabase/supabase-js";
 import { createClient } from "../lib/supabase/client";
 import { isSupabaseConfigured } from "../lib/supabase/config";
 import { downloadQuarterlyIcs } from "../lib/ics";
+import { button } from "./ui";
+import { CalendarIcon } from "./icons";
 import {
   BLS_TRAINER_WAGES,
   TAX_CONFIG,
@@ -68,8 +70,8 @@ const CATEGORY_LABELS: Record<keyof TaxInputs["deductions"], string> = {
 
 function Card({ title, children, className = "" }: { title?: string; children: React.ReactNode; className?: string }) {
   return (
-    <section className={`rounded-[28px] border border-white/10 bg-panel/60 p-6 sm:p-8 ${className}`}>
-      {title && <h2 className="mb-5 text-xs font-semibold uppercase tracking-[.18em] text-accent-light">{title}</h2>}
+    <section className={`rounded-card border border-white/10 bg-panel/60 p-6 sm:p-8 ${className}`}>
+      {title && <h2 className="mb-5 eyebrow text-accent-light">{title}</h2>}
       {children}
     </section>
   );
@@ -122,7 +124,14 @@ export default function Dashboard() {
   }, [inputs, savedRow]);
 
   if (sessionInputs === undefined) {
-    return <p className="text-offwhite/60">Loading…</p>;
+    return (
+      <div aria-busy="true" className="space-y-4">
+        <span className="sr-only">Loading your breakdown…</span>
+        <div className="skeleton h-32 rounded-card" />
+        <div className="skeleton h-40 rounded-card" />
+        <div className="skeleton h-56 rounded-card" />
+      </div>
+    );
   }
 
   const grossIncome = inputs ? inputs.gross1099 + inputs.w2Wages : 0;
@@ -133,7 +142,7 @@ export default function Dashboard() {
       <Card>
         <div className="text-center">
           <p className="text-offwhite/80">Run a calculation first and your full breakdown appears here.</p>
-          <Link href="/calculator" className="mt-5 inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-ink">
+          <Link href="/calculator" className={`mt-5 ${button()}`}>
             Go to the calculator
           </Link>
         </div>
@@ -213,15 +222,15 @@ export default function Dashboard() {
   return (
     <div className="space-y-4 motion-safe:animate-[results-in_320ms_ease-out]">
       {saved.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-panel/40 px-5 py-3">
-          <label htmlFor="estimate-source" className="text-xs font-semibold uppercase tracking-[.15em] text-accent-light">
+        <div className="flex flex-wrap items-center gap-3 rounded-tile border border-white/10 bg-panel/40 px-5 py-3">
+          <label htmlFor="estimate-source" className="eyebrow text-accent-light">
             Showing
           </label>
           <select
             id="estimate-source"
             value={sourceId}
             onChange={(e) => setSourceId(e.target.value)}
-            className="rounded-lg border border-white/15 bg-ink px-3 py-2 text-sm text-offwhite"
+            className="rounded-control border border-white/15 bg-ink px-3 py-2 text-sm text-offwhite"
           >
             {sessionInputs && <option value="current">This session&apos;s estimate</option>}
             {saved.map((s) => (
@@ -238,15 +247,15 @@ export default function Dashboard() {
       <Card>
         <div className="grid gap-6 sm:grid-cols-3">
           <div className="sm:col-span-1">
-            <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-light">Every quarter</p>
+            <p className="eyebrow text-accent-light">Every quarter</p>
             <p className="mt-1 font-serif text-5xl tracking-[-.05em] tabular-nums">{money(results.quarterlyPayment)}</p>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[.18em] text-offwhite/50">Total tax for the year</p>
+            <p className="eyebrow text-offwhite/50">Total tax for the year</p>
             <p className="mt-1 font-serif text-3xl tabular-nums">{money(results.totalLiability)}</p>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[.18em] text-offwhite/50">Effective rate</p>
+            <p className="eyebrow text-offwhite/50">Effective rate</p>
             <p className="mt-1 font-serif text-3xl tabular-nums">{pct(effectiveRate)}</p>
             <p className="mt-1 text-xs text-offwhite/50">of {money(grossIncome)} gross</p>
           </div>
@@ -323,7 +332,7 @@ export default function Dashboard() {
             </p>
           )}
         </div>
-        <p className="mt-6 rounded-lg border border-amber-400/25 bg-amber-400/[.07] p-3 text-xs leading-relaxed text-amber-100/90">
+        <p className="mt-6 rounded-control border border-amber-400/25 bg-amber-400/[.07] p-3 text-xs leading-relaxed text-amber-100/90">
           Treat this as rough context, not a like-for-like comparison. BLS tracks <strong>employed</strong> trainers and
           includes part-time roles, so those figures aren&apos;t measuring the same thing as a self-employed trainer&apos;s
           gross training income.
@@ -394,7 +403,7 @@ export default function Dashboard() {
             return (
               <li
                 key={label}
-                className={`flex flex-wrap items-center justify-between gap-3 rounded-xl border px-4 py-3 ${
+                className={`flex flex-wrap items-center justify-between gap-3 rounded-control border px-4 py-3 ${
                   isNext ? "border-accent/40 bg-accent/[.07]" : "border-white/10"
                 }`}
               >
@@ -412,8 +421,9 @@ export default function Dashboard() {
         <button
           type="button"
           onClick={() => downloadQuarterlyIcs(results.quarterlyPayment, isSavedView ? savedRow.tax_year : TAX_CONFIG.TAX_YEAR)}
-          className="mt-5 w-full rounded-full bg-accent py-3.5 font-semibold text-ink transition hover:bg-white"
+          className={`mt-5 ${button({ size: "lg", full: true })}`}
         >
+          <CalendarIcon className="size-5" />
           Add due dates to calendar (.ics)
         </button>
       </Card>
@@ -441,13 +451,13 @@ export default function Dashboard() {
 
           {scenario && (
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-xl border border-white/10 p-4">
-                <p className="text-xs uppercase tracking-[.15em] text-offwhite/50">Now · {money(inputs.gross1099)}</p>
+              <div className="rounded-control border border-white/10 p-4">
+                <p className="eyebrow text-offwhite/50">Now · {money(inputs.gross1099)}</p>
                 <p className="mt-1 font-serif text-2xl tabular-nums">{money(results.quarterlyPayment)}<span className="ml-1 text-sm font-sans text-offwhite/50">/qtr</span></p>
                 <p className="mt-1 text-xs text-offwhite/50">{money(results.totalLiability)} total · {pct(effectiveRate)}</p>
               </div>
-              <div className="rounded-xl border border-accent/30 bg-accent/[.06] p-4">
-                <p className="text-xs uppercase tracking-[.15em] text-accent-light">If · {money(scenarioIncome ?? 0)}</p>
+              <div className="rounded-control border border-accent/30 bg-accent/[.06] p-4">
+                <p className="eyebrow text-accent-light">If · {money(scenarioIncome ?? 0)}</p>
                 <p className="mt-1 font-serif text-2xl tabular-nums">{money(scenario.quarterlyPayment)}<span className="ml-1 text-sm font-sans text-offwhite/50">/qtr</span></p>
                 <p className="mt-1 text-xs text-offwhite/50">
                   {money(scenario.totalLiability)} total ·{" "}

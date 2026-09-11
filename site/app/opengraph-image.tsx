@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { SPARK_PATH } from "../components/icons";
 
 export const runtime = "edge";
 export const alt = "TrainerLedger — Free tax calculator for personal trainers";
@@ -30,11 +31,11 @@ export default async function OpengraphImage() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: 32,
-              color: "#0c0c1c",
             }}
           >
-            ✦
+            <svg width="30" height="30" viewBox="0 0 72 72">
+              <path d={SPARK_PATH} fill="#0c0c1c" />
+            </svg>
           </div>
           <div style={{ fontSize: 36, fontWeight: 600 }}>TrainerLedger</div>
         </div>

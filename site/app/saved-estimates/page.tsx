@@ -6,6 +6,7 @@ import type { User } from "@supabase/supabase-js";
 import { createClient } from "../../lib/supabase/client";
 import { isSupabaseConfigured } from "../../lib/supabase/config";
 import type { TaxResults } from "../../lib/calculator";
+import { button } from "../../components/ui";
 
 interface SavedEstimateRow {
   id: string;
@@ -60,27 +61,27 @@ export default function SavedEstimates() {
       <div className="mx-auto max-w-3xl">
         <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-light hover:underline mb-6 rounded font-semibold">&larr; Back to calculator</Link>
 
-        <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-light">Your account</p>
+        <p className="eyebrow text-accent-light">Your account</p>
         <h1 className="mt-4 font-serif text-4xl sm:text-5xl tracking-[-.03em] text-offwhite mb-10">Saved estimates</h1>
 
         {user === undefined ? (
-          <p className="text-offwhite/60">Loading…</p>
+          <LoadingRows label="Checking your account…" />
         ) : user === null ? (
-          <div className="rounded-[28px] bg-panel border border-white/10 p-8 text-center">
+          <div className="rounded-card bg-panel border border-white/10 p-8 text-center">
             <p className="text-offwhite/80 mb-4">Sign in to see your saved estimates.</p>
-            <Link href="/auth/sign-in" className="inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-ink">Sign in</Link>
+            <Link href="/auth/sign-in" className={button()}>Sign in</Link>
           </div>
         ) : estimates === null ? (
-          <p className="text-offwhite/60">Loading your estimates…</p>
+          <LoadingRows label="Loading your estimates…" />
         ) : estimates.length === 0 ? (
-          <div className="rounded-[28px] bg-panel border border-white/10 p-8 text-center">
+          <div className="rounded-card bg-panel border border-white/10 p-8 text-center">
             <p className="text-offwhite/80 mb-4">Nothing saved yet — run a calculation and click &quot;Save this estimate&quot; to keep it here.</p>
-            <Link href="/calculator" className="inline-flex rounded-full bg-accent px-6 py-3 font-semibold text-ink">Go to the calculator</Link>
+            <Link href="/calculator" className={button()}>Go to the calculator</Link>
           </div>
         ) : (
           <div className="space-y-4">
             {estimates.map((e) => (
-              <div key={e.id} className="rounded-[24px] bg-panel border border-white/10 p-6 flex items-center justify-between gap-4">
+              <div key={e.id} className="rounded-card bg-panel border border-white/10 p-6 flex items-center justify-between gap-4">
                 <div>
                   <p className="text-xs text-offwhite/50 mb-1">
                     {new Date(e.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} &middot; {e.tax_year} tax year
@@ -102,5 +103,18 @@ export default function SavedEstimates() {
         )}
       </div>
     </main>
+  );
+}
+
+/** Placeholder rows shaped like saved-estimate cards, so the page doesn't jump
+ *  when they arrive. The label is for screen readers only. */
+function LoadingRows({ label }: { label: string }) {
+  return (
+    <div aria-busy="true" className="space-y-4">
+      <span className="sr-only">{label}</span>
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="skeleton h-[116px] rounded-card" />
+      ))}
+    </div>
   );
 }

@@ -43,6 +43,12 @@ const config: Config = {
           soft: '#66d8f1', // second chart series only (federal tax), never text
         },
       },
+      // Four radii, by role. Buttons, chips and avatars stay rounded-full.
+      borderRadius: {
+        card: '28px', // top-level surfaces: form, results panel, article cards
+        tile: '16px', // cards inside a surface: deduction tiles, guide cards, stat cards
+        control: '12px', // inputs, selects, callouts, tooltips, list rows
+      },
       boxShadow: {
         card: '0 18px 50px rgba(31,25,74,.1)', // cream/white cards on any ground
         glow: '0 16px 40px rgba(0,199,239,.25)', // primary CTA hover

@@ -51,6 +51,18 @@
   p {
     text-wrap: pretty;
   }
+
+  /* Money fields are type="number" for mobile keypads and validation, but
+     the browser's spinner arrows invite accidental ±1 edits. Hide them. */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
 }
 
 @layer components {
@@ -59,6 +71,17 @@
      1376 = 1280px of content + 2 × 48px gutters. */
   .shell {
     @apply mx-auto w-full max-w-[1376px] px-6 lg:px-12;
+  }
+
+  /* Small-caps section label. Colour is set per surface
+     (accent-light on dark, accent-deep on light). */
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[.18em];
+  }
+
+  /* Loading placeholder block on dark surfaces; pulses only when motion is OK. */
+  .skeleton {
+    @apply rounded-control bg-white/[.07] motion-safe:animate-pulse;
   }
 }
 

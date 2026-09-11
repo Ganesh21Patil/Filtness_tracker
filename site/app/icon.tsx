@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { SPARK_PATH } from "../components/icons";
 
 export const runtime = "edge";
 export const size = { width: 32, height: 32 };
@@ -20,7 +21,9 @@ export default function Icon() {
           borderRadius: "50%",
         }}
       >
-        <div style={{ display: "flex", fontSize: 20, color: "#0c0c1c" }}>✦</div>
+        <svg width="18" height="18" viewBox="0 0 72 72">
+          <path d={SPARK_PATH} fill="#0c0c1c" />
+        </svg>
       </div>
     ),
     { ...size }

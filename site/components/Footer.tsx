@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Logo from "./Logo";
+import { button } from "./ui";
+import { Spark } from "./icons";
 
 const columns = [
   {
@@ -48,7 +51,7 @@ export default function Footer() {
         <p className="mt-4 text-lg text-offwhite/75">Free, no signup — your numbers, your quarterly plan, right now.</p>
         <Link
           href="/calculator"
-          className="mt-8 inline-flex items-center justify-center rounded-full bg-accent px-8 py-3.5 font-semibold text-ink transition hover:-translate-y-1 hover:shadow-glow"
+          className={`mt-8 ${button({ size: "lg" })}`}
         >
           Calculate my taxes
         </Link>
@@ -57,21 +60,20 @@ export default function Footer() {
       <footer className="shell py-12 text-sm text-offwhite/70">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-6">
           <div className="col-span-2">
-            <Link href="/" className="rounded text-xl font-semibold text-offwhite">
-              TrainerLedger
-            </Link>
+            <Logo />
             <p className="mt-3 max-w-xs">A free tax estimate tool for independent personal trainers and fitness coaches.</p>
             <Link
               href="/widget"
               className="mt-5 inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-4 py-2 text-xs font-semibold text-accent-light transition hover:bg-accent/20"
             >
-              ✦ Embed this tool on your site
+              <Spark className="size-3" />
+              Embed this tool on your site
             </Link>
           </div>
 
           {columns.map((col) => (
             <div key={col.title}>
-              <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-offwhite">{col.title}</h3>
+              <h3 className="mb-4 eyebrow text-offwhite">{col.title}</h3>
               <ul className="space-y-2.5">
                 {col.links.map((link) => (
                   <li key={link.label}>

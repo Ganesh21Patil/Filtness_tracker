@@ -6,10 +6,12 @@ import type { User } from "@supabase/supabase-js";
 import { createClient } from "../lib/supabase/client";
 import { isSupabaseConfigured } from "../lib/supabase/config";
 import { TAX_CONFIG, TaxInputs, TaxResults } from "../lib/calculator";
+import { button } from "./ui";
+import { CheckIcon, Spinner } from "./icons";
 
-// Phase 2 groundwork — see supabase/schema.sql for the table this writes to.
-// Renders nothing if Supabase isn't configured (see lib/supabase/config.ts),
-// so this is inert in production until real credentials are added.
+// Writes to the saved_estimates table (see supabase/schema.sql). Renders
+// nothing if Supabase isn't configured (see lib/supabase/config.ts). A quiet
+// tertiary action in the results panel, beside Print.
 export default function SaveEstimateButton({ inputs, results }: { inputs: TaxInputs; results: TaxResults }) {
   const [user, setUser] = useState<User | null>(null);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -27,7 +29,7 @@ export default function SaveEstimateButton({ inputs, results }: { inputs: TaxInp
 
   if (!user) {
     return (
-      <Link href="/auth/sign-in" className="mt-3 block text-center text-xs text-accent-light hover:underline">
+      <Link href="/auth/sign-in" className={button({ variant: "ghost", size: "sm" })}>
         Sign in to save this estimate
       </Link>
     );
@@ -51,9 +53,23 @@ export default function SaveEstimateButton({ inputs, results }: { inputs: TaxInp
       type="button"
       onClick={save}
       disabled={status === "saving" || status === "saved"}
-      className="mt-3 w-full text-center text-xs font-semibold text-accent-light hover:text-white disabled:opacity-70"
+      className={`${button({ variant: "ghost", size: "sm" })} disabled:opacity-100`}
     >
-      {status === "saved" ? "Saved ✓" : status === "saving" ? "Saving…" : status === "error" ? "Couldn't save — try again" : "Save this estimate"}
+      {status === "saved" ? (
+        <>
+          <CheckIcon className="size-4 text-accent-light" strokeWidth={2.25} />
+          Saved
+        </>
+      ) : status === "saving" ? (
+        <>
+          <Spinner className="size-4" />
+          Saving…
+        </>
+      ) : status === "error" ? (
+        "Couldn't save — try again"
+      ) : (
+        "Save this estimate"
+      )}
     </button>
   );
 }

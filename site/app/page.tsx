@@ -2,6 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import Calculator from "../components/Calculator";
 import Faq from "../components/Faq";
+import { button } from "../components/ui";
+import { Spark } from "../components/icons";
 import { calculateTaxes } from "../lib/calculator";
 import { faqs } from "../lib/faqs";
 import heroImage from "../public/hero-trainer.jpg";
@@ -14,14 +16,6 @@ const guides = [
 ] as const;
 
 const trustPoints = ["Free to use", "Trainer-specific deductions", "Your numbers stay yours", "Updated for 2026"];
-
-function Spark({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 72 72" fill="none">
-      <path d="M36 0c2.8 24.8 11.2 33.2 36 36-24.8 2.8-33.2 11.2-36 36-2.8-24.8-11.2-33.2-36-36C24.8 33.2 33.2 24.8 36 0Z" fill="currentColor" />
-    </svg>
-  );
-}
 
 export default function Home() {
   // Illustrative example for the hero's floating stat card, computed with the
@@ -62,18 +56,18 @@ export default function Home() {
             A free tax estimate built for independent trainers, gym contractors, and hybrid coaches. Put your income, deductions, and next move in one clear view.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
-            <a href="#calculator" className="rounded-full bg-accent px-6 py-3.5 font-semibold text-ink transition hover:-translate-y-1 hover:shadow-glow">
+            <a href="#calculator" className={button({ size: "lg" })}>
               Calculate my taxes
             </a>
-            <Link href="/guides" className="rounded-full border border-white/20 px-6 py-3.5 font-semibold transition hover:bg-white/10">
+            <Link href="/guides" className={button({ variant: "secondary", size: "lg" })}>
               Explore guides
             </Link>
           </div>
         </div>
 
         <div className="relative mx-auto mt-16 h-[510px] w-full max-w-md lg:mt-0">
-          <div className="animate-float-card absolute left-0 top-10 z-10 sm:-left-10 rounded-2xl border border-white/15 bg-panel/90 p-4 backdrop-blur">
-            <p className="text-xs uppercase tracking-[.18em] text-offwhite/60">Quarterly reserve</p>
+          <div className="animate-float-card absolute left-0 top-10 z-10 sm:-left-10 rounded-tile border border-white/15 bg-panel/90 p-4 backdrop-blur">
+            <p className="eyebrow text-offwhite/60">Quarterly reserve</p>
             <p className="mt-1 text-2xl font-semibold tabular-nums">{money(Math.round(heroPreview.quarterlyPayment))}</p>
             <div className="mt-2 h-1.5 w-32 overflow-hidden rounded bg-white/15">
               <div className="h-full w-[72%] rounded bg-accent" />
@@ -112,7 +106,7 @@ export default function Home() {
       <section id="calculator" className="relative scroll-mt-20 bg-cream py-24 text-inktext">
         <div className="shell">
           <div className="mb-14 grid gap-6 md:grid-cols-[.7fr_1.3fr]">
-            <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-deep">The calculator</p>
+            <p className="eyebrow text-accent-deep">The calculator</p>
             <h2 className="max-w-3xl font-serif text-4xl leading-[.9] tracking-[-.05em] md:text-6xl">Know what you owe. Keep doing what you love.</h2>
           </div>
           <Calculator />
@@ -121,7 +115,7 @@ export default function Home() {
 
       {/* ABOUT */}
       <section id="about" className="shell grid scroll-mt-20 gap-12 py-24 lg:grid-cols-2">
-        <div className="relative min-h-[400px] overflow-hidden rounded-[30px] bg-ink2 lg:min-h-[530px]">
+        <div className="relative min-h-[400px] overflow-hidden rounded-card bg-ink2 lg:min-h-[530px]">
           <Image
             src={trainerPortrait}
             alt="Personal trainer reviewing a client training plan in a gym"
@@ -131,13 +125,13 @@ export default function Home() {
           />
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(145deg,rgba(0,199,239,.26),transparent_38%,rgba(12,12,28,.72)_100%)] mix-blend-screen" />
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_70%_15%,transparent_15%,rgba(12,12,28,.2)_48%,rgba(12,12,28,.68)_100%)]" />
-          <div className="absolute bottom-7 left-7 max-w-xs rounded-2xl bg-cream p-5 text-inktext shadow-2xl">
+          <div className="absolute bottom-7 left-7 max-w-xs rounded-tile bg-cream p-5 text-inktext shadow-2xl">
             <Spark className="size-6 text-accent-deep" />
             <p className="mt-8 font-serif text-2xl leading-none">The numbers are part of the training.</p>
           </div>
         </div>
         <div className="flex flex-col justify-center">
-          <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-light">Built specifically for trainers</p>
+          <p className="eyebrow text-accent-light">Built specifically for trainers</p>
           <h2 className="mt-6 font-serif text-4xl leading-[.9] tracking-[-.05em] md:text-6xl">
             Your work is personal. Your plan should be too.
           </h2>
@@ -153,7 +147,7 @@ export default function Home() {
       {/* FAQ */}
       <section id="faq" className="scroll-mt-20 bg-cream px-6 py-24 text-inktext lg:px-12">
         <div className="mx-auto max-w-3xl">
-          <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-deep">Questions</p>
+          <p className="eyebrow text-accent-deep">Questions</p>
           <h2 className="mt-4 font-serif text-4xl leading-[.9] tracking-[-.05em] md:text-5xl">Good to know before you start.</h2>
           <Faq />
         </div>
@@ -162,20 +156,20 @@ export default function Home() {
       {/* GUIDES */}
       <section id="guides" className="scroll-mt-20 bg-deep2 py-24">
         <div className="shell">
-          <p className="text-xs font-semibold uppercase tracking-[.18em] text-accent-light">The trainer ledger</p>
+          <p className="eyebrow text-accent-light">The trainer ledger</p>
           <div className="mt-5 flex flex-wrap items-end justify-between gap-8">
             <h2 className="font-serif text-4xl leading-[.9] tracking-[-.05em] md:text-6xl">
               A little more
               <br />
               clarity, whenever.
             </h2>
-            <Link href="/guides" className="rounded-full border border-white/30 px-5 py-3 text-sm transition hover:bg-white hover:text-deep2">
+            <Link href="/guides" className={button({ variant: "secondary", size: "md" })}>
               All guides
             </Link>
           </div>
           <div className="mt-14 grid gap-4 md:grid-cols-3">
             {guides.map(([title, body, href]) => (
-              <Link key={href} href={href} className="group block rounded-2xl border border-white/15 p-6 transition hover:-translate-y-2 hover:bg-deep3">
+              <Link key={href} href={href} className="group block rounded-tile border border-white/15 p-6 transition hover:-translate-y-2 hover:bg-deep3">
                 <h3 className="font-serif text-3xl leading-[.95]">{title}</h3>
                 <p className="mt-4 text-sm leading-relaxed text-offwhite/70">{body}</p>
                 <span className="mt-7 inline-block text-sm text-accent-light">Read guide</span>

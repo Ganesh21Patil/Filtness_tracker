@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { createClient } from "../../../lib/supabase/client";
 import { isSupabaseConfigured } from "../../../lib/supabase/config";
+import { LogoMark } from "../../../components/Logo";
 
 export default function SignIn() {
   const [error, setError] = useState<string | null>(null);
@@ -27,9 +28,9 @@ export default function SignIn() {
 
   return (
     <main className="flex-1 bg-ink flex items-center justify-center px-4 py-20">
-      <div className="w-full max-w-sm rounded-[28px] border border-white/10 bg-panel p-8 text-center">
+      <div className="w-full max-w-sm rounded-card border border-white/10 bg-panel p-8 text-center">
         <Link href="/" className="inline-flex items-center gap-2 text-lg font-semibold tracking-tight text-offwhite mb-8">
-          <span className="grid size-8 place-items-center rounded-full bg-accent text-ink">✦</span>
+          <LogoMark />
           TrainerLedger
         </Link>
 
@@ -50,7 +51,7 @@ export default function SignIn() {
             {error && <p className="mt-4 text-xs text-red-400">{error}</p>}
           </>
         ) : (
-          <p className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-offwhite/60">
+          <p className="rounded-control border border-white/10 bg-white/5 p-4 text-sm text-offwhite/60">
             Sign-in isn&apos;t set up yet — saved estimates are coming soon.
           </p>
         )}

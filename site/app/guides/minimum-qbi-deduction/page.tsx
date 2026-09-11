@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function GuideQbiMinimum() {
   return (
     <main className="flex-1 bg-ink py-16 px-4 sm:px-6">
-      <div className="max-w-3xl mx-auto bg-cream text-inktext p-6 sm:p-10 rounded-[28px] shadow-card">
+      <div className="max-w-3xl mx-auto bg-cream text-inktext p-6 sm:p-10 rounded-card shadow-card">
         <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold">&larr; Back to calculator</Link>
         <h1 className="font-serif text-4xl sm:text-5xl tracking-[-.03em] mb-6">The minimum QBI deduction, explained</h1>
         <div className="space-y-6 text-inksoft leading-relaxed">
