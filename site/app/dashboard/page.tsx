@@ -1,5 +1,5 @@
-import Link from "next/link";
 import Dashboard from "../../components/Dashboard";
+import PageHeader from "../../components/PageHeader";
 
 // Not in the sitemap on purpose: it renders one visitor's own numbers and has
 // nothing for a crawler to index.
@@ -11,19 +11,14 @@ export const metadata = {
 
 export default function DashboardPage() {
   return (
-    <main className="flex-1 bg-ink py-16 px-4 sm:px-6">
+    <main className="flex-1 bg-ink px-4 pt-10 pb-16 sm:px-6 sm:pt-14 sm:pb-20">
       <div className="mx-auto max-w-3xl">
-        <Link
-          href="/calculator"
-          className="mb-6 inline-flex min-h-[44px] items-center rounded font-semibold text-accent-light hover:underline"
-        >
-          &larr; Back to calculator
-        </Link>
-
-        <p className="eyebrow text-accent-light">Your breakdown</p>
-        <h1 className="mb-10 mt-4 font-serif text-4xl tracking-[-.03em] text-offwhite sm:text-5xl">
-          What this actually means
-        </h1>
+        {/* The dashboard is reached from the results panel, so its parent is the calculator. */}
+        <PageHeader
+          breadcrumbs={[{ label: "Calculator", href: "/calculator" }, { label: "Your breakdown" }]}
+          title="What this actually means"
+          className="mb-10"
+        />
 
         <Dashboard />
       </div>

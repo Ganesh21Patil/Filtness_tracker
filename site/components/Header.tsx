@@ -17,6 +17,14 @@ const navLinks = [
   { href: "/about", label: "About" },
 ];
 
+// Pages that already are the calculator: the header CTA would point at itself.
+const CALCULATOR_ROUTES = [
+  "/calculator",
+  "/deductions",
+  "/calculators/quarterly-tax-calculator-personal-trainers",
+  "/calculators/personal-trainer-deduction-finder",
+];
+
 function isActive(pathname: string, href: string) {
   if (href === "/guides") return pathname === "/guides" || pathname.startsWith("/guides/");
   return pathname === href;
@@ -86,6 +94,7 @@ export default function Header() {
   // The /embed route is meant to be iframed onto other sites — no site chrome there.
   if (pathname.startsWith("/embed")) return null;
 
+  const onCalculator = CALCULATOR_ROUTES.includes(pathname);
   const firstName = user?.user_metadata?.full_name?.split(" ")?.[0] || user?.email?.split("@")[0];
 
   return (
@@ -134,9 +143,11 @@ export default function Header() {
               </Link>
             )
           )}
-          <Link href="/calculator" className={`${button({ variant: "inverse", size: "md" })} hidden sm:inline-flex`}>
-            Try the calculator
-          </Link>
+          {!onCalculator && (
+            <Link href="/calculator" className={`${button({ variant: "inverse", size: "md" })} hidden sm:inline-flex`}>
+              Try the calculator
+            </Link>
+          )}
           <button
             ref={toggleRef}
             type="button"
@@ -181,9 +192,11 @@ export default function Header() {
               )
             )}
           </nav>
-          <Link href="/calculator" className={button({ size: "lg", full: true })}>
-            Try the calculator
-          </Link>
+          {!onCalculator && (
+            <Link href="/calculator" className={button({ size: "lg", full: true })}>
+              Try the calculator
+            </Link>
+          )}
         </div>
       )}
     </header>

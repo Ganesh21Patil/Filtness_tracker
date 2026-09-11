@@ -1,5 +1,6 @@
 import Calculator from "../../components/Calculator";
 import type { Metadata } from "next";
+import PageHeader from "../../components/PageHeader";
 
 export const metadata: Metadata = {
   title: "Calculator | TrainerLedger",
@@ -9,16 +10,16 @@ export const metadata: Metadata = {
 export default function CalculatorPage() {
   return (
     <main className="flex-1 overflow-x-clip">
-      <section className="bg-ink px-6 py-16 lg:px-12">
-        <div className="mx-auto max-w-3xl text-center">
-          <h1 className="font-serif text-4xl sm:text-5xl tracking-[-.03em] text-offwhite mb-4">Calculator</h1>
-          <p className="text-lg leading-relaxed text-offwhite/80">
-            Enter your income and deductions below for a real 2026 estimate of what you owe and what to set aside each quarter.
-          </p>
-        </div>
+      {/* A short intro band: the old one pushed the form ~630px down on a phone. */}
+      <section className="bg-ink px-6 pb-10 pt-8 sm:pb-14 sm:pt-12 lg:px-12">
+        <PageHeader
+          align="center"
+          title="Calculator"
+          lede="Enter your income and deductions below for a real 2026 estimate of what you owe and what to set aside each quarter."
+        />
       </section>
 
-      <section className="bg-cream py-16">
+      <section className="bg-cream py-10 sm:py-16">
         <div className="shell">
           <Calculator />
         </div>

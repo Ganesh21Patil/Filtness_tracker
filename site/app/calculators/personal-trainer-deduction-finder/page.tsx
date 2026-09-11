@@ -1,6 +1,6 @@
-import Link from "next/link";
 import Calculator from "../../../components/Calculator";
 import type { Metadata } from "next";
+import PageHeader from "../../../components/PageHeader";
 
 export const metadata: Metadata = {
   title: "Personal Trainer Deduction Finder | TrainerLedger",
@@ -23,17 +23,16 @@ export default function DeductionFinderPage() {
       {/* eslint-disable-next-line react/no-danger */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
 
-      <section className="bg-ink px-6 py-16 lg:px-12">
-        <div className="mx-auto max-w-3xl">
-          <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-light hover:underline mb-6 rounded font-semibold">&larr; Back to calculator</Link>
-          <h1 className="font-serif text-4xl sm:text-5xl tracking-[-.03em] text-offwhite mb-6">Personal trainer deduction finder</h1>
-          <p className="text-lg leading-relaxed text-offwhite/80">
-            Certifications, liability insurance, gym rental splits, mileage, equipment, coaching software — most trainers miss at least one of these on their taxes. Walk through each category below and see roughly how much each one is worth in tax savings as you go.
-          </p>
-        </div>
+      {/* A short intro band: the old one pushed the form ~630px down on a phone. */}
+      <section className="bg-ink px-6 pb-10 pt-8 sm:pb-14 sm:pt-12 lg:px-12">
+        <PageHeader
+          align="center"
+          title="Personal trainer deduction finder"
+          lede="Certifications, liability insurance, gym rental splits, mileage, equipment, coaching software — most trainers miss at least one of these on their taxes. Walk through each category below and see roughly how much each one is worth in tax savings as you go."
+        />
       </section>
 
-      <section className="bg-cream py-16">
+      <section className="bg-cream py-10 sm:py-16">
         <div className="shell">
           <Calculator />
         </div>

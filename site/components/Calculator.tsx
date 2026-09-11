@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { calculateTaxes, TaxInputs, FilingStatus, TAX_CONFIG } from "../lib/calculator";
 import SaveEstimateButton from "./SaveEstimateButton";
 import Link from "next/link";
 import { downloadQuarterlyIcs } from "../lib/ics";
 import Tooltip from "./Tooltip";
 import { button, field, fieldError, fieldLabel, linkOnLight } from "./ui";
-import { AlertIcon, ArrowRightIcon, CalendarIcon, CheckIcon, DollarIcon, InfoIcon, PrinterIcon } from "./icons";
+import { AlertIcon, ArrowDownIcon, ArrowRightIcon, CalendarIcon, CheckIcon, DollarIcon, InfoIcon, PrinterIcon } from "./icons";
 
 // Flip to true once real ads are wired up.
 const AD_SLOT_ENABLED = false;
@@ -321,6 +321,42 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
     inputs.w2Wages > 0 ||
     inputs.w2Withheld > 0;
 
+  // Mobile summary bar. Below lg the results panel sits under a long form, so
+  // the live number is out of sight while you type. One observer watches both:
+  // the bar shows while the form is on screen and the panel isn't, and gets out
+  // of the way on its own once you reach the panel or scroll past the form.
+  const formRef = useRef<HTMLDivElement>(null);
+  const asideRef = useRef<HTMLElement>(null);
+  const [formInView, setFormInView] = useState(false);
+  const [asideInView, setAsideInView] = useState(false);
+  useEffect(() => {
+    if (embed) return;
+    const form = formRef.current;
+    const aside = asideRef.current;
+    if (!form || !aside || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.target === form) setFormInView(entry.isIntersecting);
+          else setAsideInView(entry.isIntersecting);
+        }
+      },
+      { rootMargin: "-72px 0px 0px 0px" } // what's under the sticky header doesn't count
+    );
+    io.observe(form);
+    io.observe(aside);
+    return () => io.disconnect();
+  }, [embed]);
+  const showSummaryBar = !embed && hasIncome && formInView && !asideInView;
+
+  const scrollToResults = () => {
+    const aside = asideRef.current;
+    if (!aside) return;
+    const smooth = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    aside.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+    aside.focus({ preventScroll: true });
+  };
+
   const fillTypical = () => setInputs(typicalInputs);
 
   const downloadIcs = () => downloadQuarterlyIcs(results.quarterlyPayment);
@@ -328,7 +364,7 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
   return (
     <div className="grid gap-8 lg:grid-cols-[1.15fr_.85fr]">
       {/* Form */}
-      <div className="print:hidden rounded-card bg-white p-6 shadow-card md:p-9 space-y-9">
+      <div ref={formRef} className="print:hidden rounded-card bg-white p-6 shadow-card md:p-9 space-y-9">
         <section>
           <SectionHeading n={1} title="About your work" done={workType !== null}>
             <p className="mt-1 text-sm text-inkmuted">This just decides which fields you see. Nothing is locked away.</p>
@@ -500,7 +536,12 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
           by default, and a stretched item has no room to stick — the panel
           scrolled away and left an empty block beside the deductions.
           top-24 clears the 72px sticky header. */}
-      <aside className="print:col-span-2 relative overflow-hidden rounded-card bg-deep p-7 text-white md:p-9 lg:sticky lg:top-24 lg:self-start">
+      <aside
+        ref={asideRef}
+        tabIndex={-1}
+        aria-label="Your tax estimate"
+        className="print:col-span-2 relative scroll-mt-24 overflow-hidden rounded-card bg-deep p-7 text-white md:p-9 lg:sticky lg:top-24 lg:self-start"
+      >
         <div className="pointer-events-none absolute -right-20 -top-16 size-64 rounded-full bg-accent/20 blur-3xl" />
         <div className={`relative flex flex-col ${hasIncome ? "min-h-[420px]" : ""}`}>
           <div className="flex items-center justify-between">
@@ -595,6 +636,28 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
           </p>
         </div>
       </aside>
+
+      {/* Mobile summary bar (see showSummaryBar). Not in embed mode: a fixed bar
+          inside a host page's iframe would float over their layout. Opaque
+          bg-deep on purpose — it keeps the cyan focus ring (see globals.css). */}
+      {!embed && (
+        <div
+          className={`print:hidden fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-deep px-4 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 text-white shadow-[0_-12px_32px_rgba(12,12,28,.35)] transition-[transform,visibility] duration-200 ease-out motion-reduce:transition-none lg:hidden ${
+            showSummaryBar ? "visible translate-y-0" : "invisible translate-y-full"
+          }`}
+        >
+          <div className="mx-auto flex max-w-xl items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="eyebrow text-accent-light">Quarterly payment</p>
+              <p className="font-serif text-2xl tracking-[-.04em] tabular-nums">{money(results.quarterlyPayment)}</p>
+            </div>
+            <button type="button" onClick={scrollToResults} className={button({ variant: "secondary", size: "sm" })}>
+              See estimate
+              <ArrowDownIcon className="size-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

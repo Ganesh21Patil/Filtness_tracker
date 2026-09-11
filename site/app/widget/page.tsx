@@ -1,6 +1,6 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import EmbedSnippet from "../../components/EmbedSnippet";
+import PageHeader from "../../components/PageHeader";
 
 export const metadata: Metadata = {
   title: "Embed This Calculator | TrainerLedger",
@@ -9,15 +9,14 @@ export const metadata: Metadata = {
 
 export default function Widget() {
   return (
-    <main className="flex-1 bg-ink py-16 px-4 sm:px-6">
+    <main className="flex-1 bg-ink px-4 pt-10 pb-16 sm:px-6 sm:pt-14 sm:pb-20">
       <div className="mx-auto max-w-3xl">
-        <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-light hover:underline mb-6 rounded font-semibold">&larr; Back to calculator</Link>
-
-        <p className="eyebrow text-accent-light">For site owners</p>
-        <h1 className="mt-4 font-serif text-4xl sm:text-5xl tracking-[-.03em] text-offwhite mb-6">Embed this calculator on your site</h1>
-        <p className="max-w-2xl text-lg leading-relaxed text-offwhite/80 mb-10">
-          Run a gym-business blog, certification program, or freelancer resource page? Drop this free tax calculator into your own page with one snippet. It stays free for your readers, no signup required, and links back to TrainerLedger.
-        </p>
+        <PageHeader
+          eyebrow="For site owners"
+          title="Embed this calculator on your site"
+          lede="Run a gym-business blog, certification program, or freelancer resource page? Drop this free tax calculator into your own page with one snippet. It stays free for your readers, no signup required, and links back to TrainerLedger."
+          className="mb-10"
+        />
 
         <EmbedSnippet />
 

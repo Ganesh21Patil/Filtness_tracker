@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import Breadcrumbs from "../../../components/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "LLC vs. S-Corp Calculator for Fitness Professionals | TrainerLedger",
@@ -8,9 +9,9 @@ export const metadata: Metadata = {
 
 export default function LlcVsScorpPage() {
   return (
-    <main className="flex-1 bg-ink py-16 px-4 sm:px-6">
+    <main className="flex-1 bg-ink px-4 pt-10 pb-16 sm:px-6 sm:pt-14 sm:pb-20">
       <div className="max-w-3xl mx-auto bg-cream text-inktext p-6 sm:p-10 rounded-card shadow-card">
-        <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold">&larr; Back to calculator</Link>
+        <Breadcrumbs tone="light" items={[{ label: "Calculator", href: "/calculator" }, { label: "LLC vs. S-Corp" }]} />
         <h1 className="font-serif text-4xl sm:text-5xl tracking-[-.03em] mb-6">LLC vs. S-Corp calculator</h1>
         <div className="space-y-6 text-inksoft leading-relaxed">
           <p><strong className="text-inktext">This one&apos;s coming, but not yet.</strong> An LLC-vs-S-Corp comparison sounds simple on the surface — S-Corps can save self-employment tax on the portion of profit paid out as a distribution rather than salary — but getting the number right depends on &quot;reasonable compensation&quot; rules, payroll tax mechanics, state-level LLC/S-Corp fees that vary widely, and added filing complexity that a flat formula glosses over.</p>

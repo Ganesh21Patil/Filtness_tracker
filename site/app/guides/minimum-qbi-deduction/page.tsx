@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import Breadcrumbs from "../../../components/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "The Minimum QBI Deduction, Explained | TrainerLedger",
@@ -8,9 +9,9 @@ export const metadata: Metadata = {
 
 export default function GuideQbiMinimum() {
   return (
-    <main className="flex-1 bg-ink py-16 px-4 sm:px-6">
-      <div className="max-w-3xl mx-auto bg-cream text-inktext p-6 sm:p-10 rounded-card shadow-card">
-        <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold">&larr; Back to calculator</Link>
+    <main className="flex-1 bg-ink px-4 pt-10 pb-16 sm:px-6 sm:pt-14 sm:pb-20">
+      <article className="max-w-3xl mx-auto bg-cream text-inktext p-6 sm:p-10 rounded-card shadow-card">
+        <Breadcrumbs tone="light" items={[{ label: "Guides", href: "/guides" }, { label: "The minimum QBI deduction" }]} />
         <h1 className="font-serif text-4xl sm:text-5xl tracking-[-.03em] mb-6">The minimum QBI deduction, explained</h1>
         <div className="space-y-6 text-inksoft leading-relaxed">
           <p>The Qualified Business Income (QBI) deduction lets self-employed people deduct roughly 20% of their business profit before calculating income tax. It&apos;s been around since 2018 — but the One Big Beautiful Bill Act (OBBBA, signed July 2025) made it permanent and added something new starting in 2026: a guaranteed minimum.</p>
@@ -30,7 +31,7 @@ export default function GuideQbiMinimum() {
 
           <p className="text-sm text-inkmuted font-medium border-t border-line pt-4">See also our <Link href="/about" className="text-accent-deep hover:underline">methodology</Link>, which documents exactly how the QBI figure is calculated. Last updated: September 2026.</p>
         </div>
-      </div>
+      </article>
     </main>
   );
 }

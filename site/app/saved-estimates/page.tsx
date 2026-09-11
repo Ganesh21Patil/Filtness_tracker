@@ -7,6 +7,7 @@ import { createClient } from "../../lib/supabase/client";
 import { isSupabaseConfigured } from "../../lib/supabase/config";
 import type { TaxResults } from "../../lib/calculator";
 import { button } from "../../components/ui";
+import PageHeader from "../../components/PageHeader";
 
 interface SavedEstimateRow {
   id: string;
@@ -57,12 +58,9 @@ export default function SavedEstimates() {
   };
 
   return (
-    <main className="flex-1 bg-ink py-16 px-4 sm:px-6">
+    <main className="flex-1 bg-ink px-4 pt-10 pb-16 sm:px-6 sm:pt-14 sm:pb-20">
       <div className="mx-auto max-w-3xl">
-        <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-light hover:underline mb-6 rounded font-semibold">&larr; Back to calculator</Link>
-
-        <p className="eyebrow text-accent-light">Your account</p>
-        <h1 className="mt-4 font-serif text-4xl sm:text-5xl tracking-[-.03em] text-offwhite mb-10">Saved estimates</h1>
+        <PageHeader eyebrow="Your account" title="Saved estimates" className="mb-10" />
 
         {user === undefined ? (
           <LoadingRows label="Checking your account…" />

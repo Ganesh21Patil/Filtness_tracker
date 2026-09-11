@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import Breadcrumbs from "../../../components/Breadcrumbs";
 
 export const metadata: Metadata = {
   title: "Section 179 and Your Equipment Purchases | TrainerLedger",
@@ -8,9 +9,9 @@ export const metadata: Metadata = {
 
 export default function GuideSection179() {
   return (
-    <main className="flex-1 bg-ink py-16 px-4 sm:px-6">
-      <div className="max-w-3xl mx-auto bg-cream text-inktext p-6 sm:p-10 rounded-card shadow-card">
-        <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-deep hover:underline mb-6 rounded font-semibold">&larr; Back to calculator</Link>
+    <main className="flex-1 bg-ink px-4 pt-10 pb-16 sm:px-6 sm:pt-14 sm:pb-20">
+      <article className="max-w-3xl mx-auto bg-cream text-inktext p-6 sm:p-10 rounded-card shadow-card">
+        <Breadcrumbs tone="light" items={[{ label: "Guides", href: "/guides" }, { label: "Section 179 and equipment" }]} />
         <h1 className="font-serif text-4xl sm:text-5xl tracking-[-.03em] mb-6">Section 179 and your equipment purchases</h1>
         <div className="space-y-6 text-inksoft leading-relaxed">
           <p>When you buy business equipment — weights, benches, resistance bands, a laptop for programming, wearables you use with clients — the default tax rule is that you&apos;d normally spread (&quot;depreciate&quot;) the cost over several years instead of deducting it all at once.</p>
@@ -35,7 +36,7 @@ export default function GuideSection179() {
 
           <p className="text-sm text-inkmuted font-medium border-t border-line pt-4">This is general information, not tax advice — large equipment purchases and mixed personal/business use can get complicated. See also our <Link href="/about" className="text-accent-deep hover:underline">methodology</Link>. Last updated: September 2026.</p>
         </div>
-      </div>
+      </article>
     </main>
   );
 }

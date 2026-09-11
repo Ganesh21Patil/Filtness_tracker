@@ -99,6 +99,18 @@ export const ArrowRightIcon = (p: IconProps) => (
   </Stroke>
 );
 
+export const ArrowDownIcon = (p: IconProps) => (
+  <Stroke {...p}>
+    <path d="M12 5v14M6 13l6 6 6-6" />
+  </Stroke>
+);
+
+export const ChevronRightIcon = (p: IconProps) => (
+  <Stroke {...p}>
+    <path d="m9 6 6 6-6 6" />
+  </Stroke>
+);
+
 export const DollarIcon = (p: IconProps) => (
   <Stroke {...p}>
     <circle cx="12" cy="12" r="9" />

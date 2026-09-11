@@ -9,7 +9,7 @@ type ButtonVariant = "primary" | "secondary" | "inverse" | "ghost";
 type ButtonSize = "sm" | "md" | "lg";
 
 const buttonBase =
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-semibold " +
+  "inline-flex items-center justify-center gap-2 rounded-full py-2 font-semibold " +
   "transition-[background-color,border-color,color,box-shadow,transform] duration-150 ease-out " +
   "motion-safe:active:scale-[.98] disabled:pointer-events-none disabled:opacity-50";
 
@@ -24,10 +24,12 @@ const buttonVariants: Record<ButtonVariant, string> = {
   ghost: "text-haze hover:bg-white/[.07] hover:text-offwhite",
 };
 
+// Minimum heights, not fixed: a full-width button in a narrow column may need
+// two lines, and a fixed height would clip the second one.
 const buttonSizes: Record<ButtonSize, string> = {
-  sm: "h-10 px-4 text-sm",
-  md: "h-11 px-5 text-sm", // 44px: the site's minimum touch target
-  lg: "h-12 px-6 text-base",
+  sm: "min-h-[40px] px-4 text-sm",
+  md: "min-h-[44px] px-5 text-sm", // the site's minimum touch target
+  lg: "min-h-[48px] px-6 text-base",
 };
 
 export function button({
@@ -35,7 +37,10 @@ export function button({
   size = "md",
   full = false,
 }: { variant?: ButtonVariant; size?: ButtonSize; full?: boolean } = {}) {
-  return `${buttonBase} ${buttonVariants[variant]} ${buttonSizes[size]}${full ? " w-full" : ""}`;
+  // Inline buttons keep their label on one line. Full-width ones may wrap: at
+  // 375px the calendar label plus its icon is wider than the results panel.
+  const layout = full ? " w-full text-center" : " whitespace-nowrap";
+  return `${buttonBase} ${buttonVariants[variant]} ${buttonSizes[size]}${layout}`;
 }
 
 /** Inline text links. */

@@ -37,25 +37,41 @@ const columns = [
   },
 ];
 
+// The closing band sends people to the calculator. On pages where they're
+// already doing that task — or signing in, or reading embed instructions —
+// it's a detour, so it's left off.
+const NO_CTA_ROUTES = [
+  "/calculator",
+  "/deductions",
+  "/calculators/quarterly-tax-calculator-personal-trainers",
+  "/calculators/personal-trainer-deduction-finder",
+  "/dashboard",
+  "/saved-estimates",
+  "/auth",
+  "/widget",
+];
+
 export default function Footer() {
   const pathname = usePathname();
+  const showCta = !NO_CTA_ROUTES.some((r) => pathname === r || pathname?.startsWith(`${r}/`));
 
   // The /embed route is meant to be iframed onto other sites — no site chrome there.
   if (pathname?.startsWith("/embed")) return null;
 
   return (
     <>
-      {/* Footer CTA band */}
-      <section className="bg-deep2 px-6 py-20 text-center lg:px-12">
-        <h2 className="font-serif text-4xl sm:text-5xl tracking-[-.03em] text-offwhite">Ready to know what you owe?</h2>
-        <p className="mt-4 text-lg text-offwhite/75">Free, no signup — your numbers, your quarterly plan, right now.</p>
-        <Link
-          href="/calculator"
-          className={`mt-8 ${button({ size: "lg" })}`}
-        >
-          Calculate my taxes
-        </Link>
-      </section>
+      {showCta && (
+        <section className="bg-deep2 px-6 py-20 text-center lg:px-12">
+          <h2 className="font-serif text-4xl sm:text-5xl tracking-[-.03em] text-offwhite">Ready to know what you owe?</h2>
+          <p className="mt-4 text-lg text-offwhite/75">Free, no signup — your numbers, your quarterly plan, right now.</p>
+          <Link
+            href="/calculator"
+            className={`mt-8 ${button({ size: "lg" })}`}
+          >
+            Calculate my taxes
+          </Link>
+        </section>
+      )}
 
       <footer className="shell py-12 text-sm text-offwhite/70">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-6">

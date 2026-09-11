@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import PageHeader from "../../components/PageHeader";
 
 export const metadata: Metadata = {
   title: "Guides | TrainerLedger",
@@ -17,12 +18,9 @@ const guides = [
 
 export default function GuidesIndex() {
   return (
-    <main className="flex-1 bg-ink py-16 px-4 sm:px-6">
+    <main className="flex-1 bg-ink px-4 pt-10 pb-16 sm:px-6 sm:pt-14 sm:pb-20">
       <div className="mx-auto max-w-3xl">
-        <Link href="/calculator" className="inline-flex items-center min-h-[44px] text-accent-light hover:underline mb-6 rounded font-semibold">&larr; Back to calculator</Link>
-
-        <p className="eyebrow text-accent-light">The trainer ledger</p>
-        <h1 className="mt-4 font-serif text-4xl sm:text-5xl tracking-[-.03em] text-offwhite mb-10">Guides</h1>
+        <PageHeader eyebrow="The trainer ledger" title="Guides" className="mb-10" />
 
         <div className="space-y-4">
           {guides.map(([title, body, href]) => (
