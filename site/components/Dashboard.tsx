@@ -7,7 +7,7 @@ import { createClient } from "../lib/supabase/client";
 import { isSupabaseConfigured } from "../lib/supabase/config";
 import { downloadQuarterlyIcs } from "../lib/ics";
 import { button } from "./ui";
-import { CalendarIcon } from "./icons";
+import { AlertIcon, CalendarIcon, ChevronDownIcon } from "./icons";
 import {
   BLS_TRAINER_WAGES,
   TAX_CONFIG,
@@ -68,9 +68,9 @@ const CATEGORY_LABELS: Record<keyof TaxInputs["deductions"], string> = {
   other: "Other expenses",
 };
 
-function Card({ title, children, className = "" }: { title?: string; children: React.ReactNode; className?: string }) {
+function Card({ title, children, className = "", glow = false }: { title?: string; children: React.ReactNode; className?: string; glow?: boolean }) {
   return (
-    <section className={`rounded-card border border-white/10 bg-panel/60 p-6 sm:p-8 ${className}`}>
+    <section className={`${glow ? "glass-glow" : "glass"} rounded-card p-6 sm:p-8 ${className}`}>
       {title && <h2 className="mb-5 eyebrow text-accent-light">{title}</h2>}
       {children}
     </section>
@@ -140,9 +140,10 @@ export default function Dashboard() {
   if (!hasCalculation && saved.length === 0) {
     return (
       <Card>
-        <div className="text-center">
-          <p className="text-offwhite/80">Run a calculation first and your full breakdown appears here.</p>
-          <Link href="/calculator" className={`mt-5 ${button()}`}>
+        <div className="py-6 text-center">
+          <p className="font-serif text-2xl text-offwhite">Nothing to break down yet</p>
+          <p className="mt-2 text-haze">Run a calculation first and your full breakdown appears here.</p>
+          <Link href="/calculator" className={`mt-6 ${button({ size: "lg" })}`}>
             Go to the calculator
           </Link>
         </div>
@@ -153,7 +154,7 @@ export default function Dashboard() {
   if (!inputs || !results) {
     return (
       <Card>
-        <p className="text-center text-offwhite/80">Pick a saved estimate above to see its breakdown.</p>
+        <p className="text-center text-haze">Pick a saved estimate above to see its breakdown.</p>
       </Card>
     );
   }
@@ -164,9 +165,9 @@ export default function Dashboard() {
 
   const segments = [
     { label: "SE tax", value: results.seTax.total, className: "bg-accent" },
-    { label: "Federal tax", value: results.federalTax, className: "bg-accent-soft/60" },
-    { label: "Business expenses", value: deductions, className: "bg-violet-300/50" },
-    { label: "Take-home", value: takeHome, className: "bg-white/25" },
+    { label: "Federal tax", value: results.federalTax, className: "bg-violet" },
+    { label: "Business expenses", value: deductions, className: "bg-gold/70" },
+    { label: "Take-home", value: takeHome, className: "bg-white/30" },
   ].map((s) => ({ ...s, share: grossIncome > 0 ? s.value / grossIncome : 0 }));
 
   const topCategories = (Object.keys(inputs.deductions) as (keyof TaxInputs["deductions"])[])
@@ -220,52 +221,59 @@ export default function Dashboard() {
       : calculateTaxes({ ...inputs, gross1099: scenarioIncome });
 
   return (
-    <div className="space-y-4 motion-safe:animate-[results-in_320ms_ease-out]">
+    // Two columns from lg: the headline and the income bar span the width,
+    // then related cards pair up (benchmark | deductions, plan | what-if).
+    // Rows stretch, so paired cards share a height and edges line up.
+    <div className="grid gap-5 lg:grid-cols-2 motion-safe:animate-[results-in_320ms_ease-out]">
       {saved.length > 0 && (
-        <div className="flex flex-wrap items-center gap-3 rounded-tile border border-white/10 bg-panel/40 px-5 py-3">
+        <div className="glass flex flex-wrap items-center gap-3 rounded-tile px-5 py-3 lg:col-span-2">
           <label htmlFor="estimate-source" className="eyebrow text-accent-light">
             Showing
           </label>
-          <select
-            id="estimate-source"
-            value={sourceId}
-            onChange={(e) => setSourceId(e.target.value)}
-            className="rounded-control border border-white/15 bg-ink px-3 py-2 text-sm text-offwhite"
-          >
-            {sessionInputs && <option value="current">This session&apos;s estimate</option>}
-            {saved.map((s) => (
-              <option key={s.id} value={s.id}>
-                Saved {new Date(s.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })} · {s.tax_year}
-              </option>
-            ))}
-          </select>
-          {isSavedView && <span className="text-xs text-offwhite/50">Frozen at save time, using {savedRow.tax_year} rules.</span>}
+          <div className="relative">
+            <select
+              id="estimate-source"
+              value={sourceId}
+              onChange={(e) => setSourceId(e.target.value)}
+              className="min-h-[44px] cursor-pointer appearance-none rounded-control border border-edge bg-panel py-2 pl-3 pr-10 text-sm text-offwhite"
+            >
+              {sessionInputs && <option value="current">This session&apos;s estimate</option>}
+              {saved.map((s) => (
+                <option key={s.id} value={s.id}>
+                  Saved {new Date(s.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })} · {s.tax_year}
+                </option>
+              ))}
+            </select>
+            <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-accent-light" />
+          </div>
+          {isSavedView && <span className="text-xs text-fog">Frozen at save time, using {savedRow.tax_year} rules.</span>}
         </div>
       )}
 
       {/* 1. HEADLINE */}
-      <Card>
-        <div className="grid gap-6 sm:grid-cols-3">
-          <div className="sm:col-span-1">
-            <p className="eyebrow text-accent-light">Every quarter</p>
-            <p className="mt-1 font-serif text-5xl tracking-[-.05em] tabular-nums">{money(results.quarterlyPayment)}</p>
-          </div>
+      <Card glow className="relative overflow-hidden lg:col-span-2">
+        <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-24 size-72 rounded-full bg-electric/25 blur-3xl" />
+        <div className="relative grid gap-8 sm:grid-cols-3">
           <div>
-            <p className="eyebrow text-offwhite/50">Total tax for the year</p>
-            <p className="mt-1 font-serif text-3xl tabular-nums">{money(results.totalLiability)}</p>
+            <p className="eyebrow text-haze">Every quarter</p>
+            <p className="mt-2 type-figure text-glow text-6xl">{money(results.quarterlyPayment)}</p>
           </div>
-          <div>
-            <p className="eyebrow text-offwhite/50">Effective rate</p>
-            <p className="mt-1 font-serif text-3xl tabular-nums">{pct(effectiveRate)}</p>
-            <p className="mt-1 text-xs text-offwhite/50">of {money(grossIncome)} gross</p>
+          <div className="sm:border-l sm:border-white/[.08] sm:pl-8">
+            <p className="eyebrow text-fog">Total tax for the year</p>
+            <p className="mt-2 type-figure text-4xl">{money(results.totalLiability)}</p>
+          </div>
+          <div className="sm:border-l sm:border-white/[.08] sm:pl-8">
+            <p className="eyebrow text-fog">Effective rate</p>
+            <p className="mt-2 type-figure text-4xl">{pct(effectiveRate)}</p>
+            <p className="mt-1 text-xs text-fog">of {money(grossIncome)} gross</p>
           </div>
         </div>
       </Card>
 
       {/* 2. WHERE YOUR MONEY GOES */}
-      <Card title="Where your money goes">
+      <Card title="Where your money goes" className="lg:col-span-2">
         <div
-          className="flex h-4 w-full overflow-hidden rounded-full bg-white/10"
+          className="flex h-3 w-full overflow-hidden rounded-full bg-white/10"
           role="img"
           aria-label={segments.map((s) => `${s.label} ${pct(s.share)}`).join(", ")}
         >
@@ -273,15 +281,16 @@ export default function Dashboard() {
             <div key={s.label} className={`h-full ${s.className}`} style={{ width: `${s.share * 100}%` }} />
           ))}
         </div>
-        <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+        <dl className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {segments.map((s) => (
-            <div key={s.label} className="flex items-baseline justify-between gap-3 text-sm">
-              <dt className="inline-flex items-center gap-2 text-haze">
+            <div key={s.label} className="rounded-control border border-white/[.08] bg-white/[.02] p-4">
+              <dt className="flex items-center gap-2 text-xs text-dusk">
                 <span aria-hidden="true" className={`size-2.5 flex-shrink-0 rounded-full ${s.className}`} />
                 {s.label}
               </dt>
-              <dd className="tabular-nums font-medium">
-                {money(s.value)} <span className="text-offwhite/60">({pct(s.share)})</span>
+              <dd className="mt-2">
+                <span className="block text-lg font-semibold tabular-nums text-offwhite">{money(s.value)}</span>
+                <span className="text-xs tabular-nums text-fog">{pct(s.share)}</span>
               </dd>
             </div>
           ))}
@@ -290,7 +299,7 @@ export default function Dashboard() {
 
       {/* 3. BLS BENCHMARK */}
       <Card title="How you compare">
-        <p className="text-lg leading-relaxed">{benchmarkSentence()}</p>
+        <p className="text-lg leading-relaxed text-offwhite">{benchmarkSentence()}</p>
         <div className="mt-6">
           <div className="relative h-2 w-full rounded-full bg-white/10">
             {BLS_MARKERS.map((m) => (
@@ -299,7 +308,7 @@ export default function Dashboard() {
             {trainingIncome > 0 && (
               <span
                 aria-hidden="true"
-                className={`absolute -top-1 size-4 rounded-full border-2 border-ink bg-accent ${aboveScale ? "-translate-x-full" : "-translate-x-1/2"}`}
+                className={`absolute -top-1 size-4 rounded-full border-2 border-ink bg-accent shadow-[0_0_12px_rgba(31,182,255,.9)] ${aboveScale ? "-translate-x-full" : "-translate-x-1/2"}`}
                 style={{ left: markerPos(trainingIncome) }}
               />
             )}
@@ -307,7 +316,7 @@ export default function Dashboard() {
           {/* Each label is pinned to its own tick's percentage, so the two can
               never drift apart. The end labels shift inward instead of
               centring so they don't hang off the edge of the card. */}
-          <div className="relative mt-2 h-8 text-xs text-offwhite/50">
+          <div className="relative mt-2 h-8 text-xs text-fog">
             {BLS_MARKERS.map((m) => {
               const p = markerPct(m.value);
               return (
@@ -327,20 +336,23 @@ export default function Dashboard() {
             })}
           </div>
           {aboveScale && (
-            <p className="text-xs text-offwhite/50">
+            <p className="text-xs text-fog">
               Your income is past the end of this scale, so the marker sits at the edge.
             </p>
           )}
         </div>
-        <p className="mt-6 rounded-control border border-amber-400/25 bg-amber-400/[.07] p-3 text-xs leading-relaxed text-amber-100/90">
-          Treat this as rough context, not a like-for-like comparison. BLS tracks <strong>employed</strong> trainers and
-          includes part-time roles, so those figures aren&apos;t measuring the same thing as a self-employed trainer&apos;s
-          gross training income.
+        <p className="mt-6 flex gap-2 rounded-control border border-gold/30 bg-gold/[.07] p-3 text-xs leading-relaxed text-gold-light">
+          <AlertIcon className="mt-px size-4 flex-shrink-0" />
+          <span>
+            Treat this as rough context, not a like-for-like comparison. BLS tracks <strong>employed</strong> trainers and
+            includes part-time roles, so those figures aren&apos;t measuring the same thing as a self-employed trainer&apos;s
+            gross training income.
+          </span>
         </p>
-        <p className="mt-3 text-xs text-offwhite/60">
+        <p className="mt-3 text-xs text-dusk">
           Source: U.S. Bureau of Labor Statistics, Occupational Employment and Wage Statistics,{" "}
           {BLS_TRAINER_WAGES.REFERENCE}, SOC {BLS_TRAINER_WAGES.SOC_CODE}.{" "}
-          <a href={BLS_TRAINER_WAGES.SOURCE_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-offwhite/70">
+          <a href={BLS_TRAINER_WAGES.SOURCE_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-offwhite">
             bls.gov
           </a>
         </p>
@@ -349,14 +361,14 @@ export default function Dashboard() {
       {/* 4. DEDUCTION PICTURE */}
       <Card title="Your deduction picture">
         <div className="flex flex-wrap items-baseline gap-x-3">
-          <p className="font-serif text-3xl tabular-nums">{money(deductions)}</p>
-          <p className="text-sm text-offwhite/60">
+          <p className="type-figure text-4xl">{money(deductions)}</p>
+          <p className="text-sm text-dusk">
             claimed{grossIncome > 0 ? `, ${pct(deductions / grossIncome)} of your gross income` : ""}
           </p>
         </div>
 
         {topCategories.length > 0 && (
-          <dl className="mt-5 space-y-2">
+          <dl className="mt-5 space-y-2.5">
             {topCategories.map((c) => (
               // The label takes its own line on a phone: sharing one row with
               // a fixed-width label and value left the bar ~14px wide at 360px.
@@ -364,7 +376,7 @@ export default function Dashboard() {
                 <dt className="w-full flex-shrink-0 truncate text-haze sm:w-40">{c.label}</dt>
                 <dd className="flex flex-1 items-center gap-3">
                   <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
-                    <span className="block h-full rounded-full bg-accent/70" style={{ width: `${(c.value / topCategories[0].value) * 100}%` }} />
+                    <span className="block h-full rounded-full bg-gradient-to-r from-accent to-electric-light" style={{ width: `${(c.value / topCategories[0].value) * 100}%` }} />
                   </span>
                   <span className="w-20 text-right tabular-nums">{money(c.value)}</span>
                 </dd>
@@ -374,9 +386,9 @@ export default function Dashboard() {
         )}
 
         {untouched.length > 0 && (
-          <div className="mt-6 border-t border-white/10 pt-5">
+          <div className="mt-6 border-t border-white/[.08] pt-5">
             <p className="text-sm font-semibold">Left at zero</p>
-            <p className="mt-1 text-xs text-offwhite/50">
+            <p className="mt-1 text-xs text-fog">
               We don&apos;t know what you actually spend, so these are prompts, not missed money.
             </p>
             <ul className="mt-3 space-y-2">
@@ -386,7 +398,7 @@ export default function Dashboard() {
                 </li>
               ))}
             </ul>
-            <Link href="/deductions" className="mt-4 inline-block text-sm font-semibold text-accent-light hover:underline">
+            <Link href="/deductions" className="mt-4 inline-flex min-h-[44px] items-center text-sm font-semibold text-accent-light hover:underline">
               Go add them
             </Link>
           </div>
@@ -394,7 +406,7 @@ export default function Dashboard() {
       </Card>
 
       {/* 5. QUARTERLY PLAN */}
-      <Card title="Your quarterly plan">
+      <Card title="Your quarterly plan" className={isSavedView ? "lg:col-span-2" : undefined}>
         <ul className="space-y-2">
           {dues.map(({ label, date }) => {
             const isNext = nextDue?.label === label;
@@ -404,27 +416,27 @@ export default function Dashboard() {
               <li
                 key={label}
                 className={`flex flex-wrap items-center justify-between gap-3 rounded-control border px-4 py-3 ${
-                  isNext ? "border-accent/40 bg-accent/[.07]" : "border-white/10"
+                  isNext ? "border-electric-light/50 bg-electric/[.1] shadow-[0_0_24px_-12px_rgba(42,98,255,.9)]" : "border-white/10 bg-white/[.02]"
                 }`}
               >
                 <span className="text-sm">
                   <span className="font-semibold">{date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
                   {isNext && <span className="ml-2 text-xs font-semibold text-accent-light">next · in {days} {days === 1 ? "day" : "days"}</span>}
-                  {passed && <span className="ml-2 text-xs text-offwhite/60">passed</span>}
+                  {passed && <span className="ml-2 text-xs text-dusk">passed</span>}
                 </span>
                 <span className="tabular-nums font-semibold">{money(results.quarterlyPayment)}</span>
               </li>
             );
           })}
         </ul>
-        {!nextDue && <p className="mt-3 text-xs text-offwhite/50">All four dates for this tax year have passed.</p>}
+        {!nextDue && <p className="mt-3 text-xs text-fog">All four dates for this tax year have passed.</p>}
         <button
           type="button"
           onClick={() => downloadQuarterlyIcs(results.quarterlyPayment, isSavedView ? savedRow.tax_year : TAX_CONFIG.TAX_YEAR)}
-          className={`mt-5 ${button({ size: "lg", full: true })}`}
+          className={`mt-5 ${button({ variant: "glow", size: "lg", full: true })}`}
         >
           <CalendarIcon className="size-5" />
-          Add due dates to calendar (.ics)
+          Add due dates to calendar
         </button>
       </Card>
 
@@ -433,7 +445,7 @@ export default function Dashboard() {
         <Card title="What if you earned more?">
           <label htmlFor="scenario-income" className="block text-sm text-haze">
             Training income
-            <span className="ml-2 font-semibold text-offwhite tabular-nums">{money(scenarioIncome ?? inputs.gross1099)}</span>
+            <span className="ml-2 font-semibold tabular-nums text-offwhite">{money(scenarioIncome ?? inputs.gross1099)}</span>
           </label>
           <input
             id="scenario-income"
@@ -447,19 +459,19 @@ export default function Dashboard() {
             // still renders at its natural height inside it.
             className="mt-3 h-11 w-full cursor-pointer accent-accent"
           />
-          <p className="mt-2 text-xs text-offwhite/50">Keeps your current deductions and filing status. One variable at a time.</p>
+          <p className="mt-2 text-xs text-fog">Keeps your current deductions and filing status. One variable at a time.</p>
 
           {scenario && (
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <div className="rounded-control border border-white/10 p-4">
-                <p className="eyebrow text-offwhite/50">Now · {money(inputs.gross1099)}</p>
-                <p className="mt-1 font-serif text-2xl tabular-nums">{money(results.quarterlyPayment)}<span className="ml-1 text-sm font-sans text-offwhite/50">/qtr</span></p>
-                <p className="mt-1 text-xs text-offwhite/50">{money(results.totalLiability)} total · {pct(effectiveRate)}</p>
+              <div className="rounded-control border border-white/10 bg-white/[.02] p-4">
+                <p className="eyebrow text-fog">Now · {money(inputs.gross1099)}</p>
+                <p className="mt-1 type-figure text-2xl">{money(results.quarterlyPayment)}<span className="ml-1 font-sans text-sm text-fog">/qtr</span></p>
+                <p className="mt-1 text-xs text-fog">{money(results.totalLiability)} total · {pct(effectiveRate)}</p>
               </div>
-              <div className="rounded-control border border-accent/30 bg-accent/[.06] p-4">
+              <div className="rounded-control border border-electric-light/40 bg-electric/[.08] p-4">
                 <p className="eyebrow text-accent-light">If · {money(scenarioIncome ?? 0)}</p>
-                <p className="mt-1 font-serif text-2xl tabular-nums">{money(scenario.quarterlyPayment)}<span className="ml-1 text-sm font-sans text-offwhite/50">/qtr</span></p>
-                <p className="mt-1 text-xs text-offwhite/50">
+                <p className="mt-1 type-figure text-2xl">{money(scenario.quarterlyPayment)}<span className="ml-1 font-sans text-sm text-fog">/qtr</span></p>
+                <p className="mt-1 text-xs text-fog">
                   {money(scenario.totalLiability)} total ·{" "}
                   {pct(((scenarioIncome ?? 0) + inputs.w2Wages) > 0 ? scenario.totalLiability / ((scenarioIncome ?? 0) + inputs.w2Wages) : 0)}
                 </p>
@@ -469,7 +481,7 @@ export default function Dashboard() {
         </Card>
       )}
 
-      <p className="px-2 text-center text-xs leading-relaxed text-dusk">
+      <p className="px-2 text-center text-xs leading-relaxed text-dusk lg:col-span-2">
         For planning purposes only — not formal tax or legal advice.
       </p>
     </div>

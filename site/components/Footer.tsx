@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import Logo from "./Logo";
 import { button } from "./ui";
-import { Spark } from "./icons";
+import { ArrowRightIcon, CodeIcon } from "./icons";
+import mountains from "../public/images/mountains.jpg";
+import athlete from "../public/images/cta-athlete.jpg";
 
 const columns = [
   {
@@ -25,7 +28,10 @@ const columns = [
   },
   {
     title: "Company",
-    links: [{ href: "/about", label: "About" }],
+    links: [
+      { href: "/about", label: "About" },
+      { href: "/widget", label: "Embed the calculator" },
+    ],
   },
   {
     title: "Legal",
@@ -61,48 +67,84 @@ export default function Footer() {
   return (
     <>
       {showCta && (
-        <section className="bg-deep2 px-6 py-20 text-center lg:px-12">
-          <h2 className="font-serif text-4xl sm:text-5xl tracking-[-.03em] text-offwhite">Ready to know what you owe?</h2>
-          <p className="mt-4 text-lg text-offwhite/75">Free, no signup — your numbers, your quarterly plan, right now.</p>
-          <Link
-            href="/calculator"
-            className={`mt-8 ${button({ size: "lg" })}`}
-          >
-            Calculate my taxes
-          </Link>
+        <section aria-labelledby="cta-heading" className="relative isolate overflow-hidden border-y border-white/[.08] bg-ink2">
+          {/* Two photographs melt into the navy from either side: the athlete
+              (left) and the mountain range (right). Decorative only. */}
+          <div aria-hidden="true" className="absolute inset-y-0 left-0 hidden w-[36%] md:block [mask-image:linear-gradient(to_right,black_45%,transparent)]">
+            <Image src={athlete} alt="" fill sizes="36vw" className="photo-grade object-cover object-[45%_30%] opacity-70" />
+          </div>
+          <div aria-hidden="true" className="absolute inset-y-0 right-0 w-full md:w-[62%] [mask-image:linear-gradient(to_left,black_40%,transparent)]">
+            <Image src={mountains} alt="" fill sizes="62vw" className="object-cover object-[35%_center] opacity-50 md:opacity-70" />
+          </div>
+          <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(40%_70%_at_50%_50%,rgb(5_8_15/.85),transparent)]" />
+          <span aria-hidden="true" className="streak animate-beam -left-10 top-[30%] w-[40%] -rotate-[12deg]" />
+
+          <p aria-hidden="true" className="slogan absolute bottom-16 left-[5%] hidden max-w-[11ch] xl:block">
+            Same hard work. Smarter finances.
+          </p>
+          <p aria-hidden="true" className="slogan absolute bottom-14 right-[5%] hidden max-w-[13ch] text-right xl:block [&::after]:ml-auto">
+            A stronger tomorrow starts with a clear plan.
+          </p>
+
+          <div className="shell relative py-20 text-center sm:py-24">
+            <p className="eyebrow text-accent-light">Ready to take control?</p>
+            <h2 id="cta-heading" className="mx-auto mt-4 max-w-xl type-display">
+              Know what you owe. Keep moving forward.
+            </h2>
+            <p className="mt-5 text-lg text-haze">Free, no signup — your numbers stay in your browser.</p>
+            <Link href="/calculator" className={`mt-9 ${button({ size: "lg" })}`}>
+              Calculate my taxes
+              <ArrowRightIcon className="size-4" />
+            </Link>
+          </div>
         </section>
       )}
 
-      <footer className="shell py-12 text-sm text-offwhite/70">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-6">
-          <div className="col-span-2">
-            <Logo />
-            <p className="mt-3 max-w-xs">A free tax estimate tool for independent personal trainers and fitness coaches.</p>
+      <footer className="relative text-sm text-dusk">
+        <div className="shell py-14">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-10 md:grid-cols-4 lg:grid-cols-[1.6fr_repeat(4,1fr)_1.5fr]">
+            <div className="col-span-2 md:col-span-4 lg:col-span-1">
+              <Logo />
+              <p className="mt-4 max-w-[26ch] leading-relaxed">A tax planner for independent trainers and fitness coaches.</p>
+            </div>
+
+            {columns.map((col) => (
+              <div key={col.title}>
+                <h3 className="text-sm font-semibold text-offwhite">{col.title}</h3>
+                <ul className="mt-2">
+                  {col.links.map((link) => (
+                    <li key={link.label}>
+                      <Link href={link.href} className="inline-flex min-h-[40px] items-center rounded transition-colors hover:text-offwhite">
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+
+            {/* A real offer in the slot a newsletter would usually take. */}
             <Link
               href="/widget"
-              className="mt-5 inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-4 py-2 text-xs font-semibold text-accent-light transition hover:bg-accent/20"
+              className="glass group col-span-2 flex flex-col justify-between gap-4 rounded-tile p-5 transition-colors hover:border-white/20 md:col-span-4 lg:col-span-1"
             >
-              <Spark className="size-3" />
-              Embed this tool on your site
+              <span className="grid size-10 place-items-center rounded-full border border-accent/40 bg-accent/10 text-accent-light">
+                <CodeIcon className="size-5" />
+              </span>
+              <span>
+                <span className="block font-semibold text-offwhite">Run a fitness blog or studio site?</span>
+                <span className="mt-1 inline-flex items-center gap-1.5 font-semibold text-accent-light">
+                  Embed the calculator
+                  <ArrowRightIcon className="size-4 transition-transform motion-safe:group-hover:translate-x-0.5" />
+                </span>
+              </span>
             </Link>
           </div>
 
-          {columns.map((col) => (
-            <div key={col.title}>
-              <h3 className="mb-4 eyebrow text-offwhite">{col.title}</h3>
-              <ul className="space-y-2.5">
-                {col.links.map((link) => (
-                  <li key={link.label}>
-                    <Link href={link.href} className="rounded hover:text-offwhite">{link.label}</Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-12 border-t border-white/10 pt-6 text-xs text-offwhite/50">
-          <p>&copy; {new Date().getFullYear()} TrainerLedger &middot; Privacy first</p>
+          <div className="mt-12 flex flex-col gap-2 border-t border-white/[.08] pt-6 text-xs text-fog sm:flex-row sm:items-center sm:justify-between">
+            <p>&copy; {new Date().getFullYear()} TrainerLedger. Privacy first — your numbers stay yours.</p>
+            <p>Built for a stronger, more independent you.</p>
+          </div>
         </div>
       </footer>
     </>

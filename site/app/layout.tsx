@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { DM_Sans, DM_Serif_Display } from "next/font/google";
+import { Barlow_Condensed, DM_Sans, DM_Serif_Display, Nothing_You_Could_Do } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
@@ -16,6 +16,23 @@ const dmSerifDisplay = DM_Serif_Display({
   weight: "400",
   style: ["normal", "italic"],
   variable: "--font-serif",
+  display: "swap",
+});
+
+// Accent faces for the brand's painted-on-the-wall slogans and handwritten
+// margin notes. Decorative only — never used for body copy or data.
+const barlowCondensed = Barlow_Condensed({
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-condensed",
+  display: "swap",
+});
+
+const handwriting = Nothing_You_Could_Do({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-script",
   display: "swap",
 });
 
@@ -51,7 +68,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${dmSans.variable} ${dmSerifDisplay.variable}`}>
+    <html lang="en" className={`${dmSans.variable} ${dmSerifDisplay.variable} ${barlowCondensed.variable} ${handwriting.variable}`}>
       <body className="flex min-h-screen flex-col bg-ink text-offwhite">
         <Header />
         <div className="flex flex-1 flex-col">{children}</div>

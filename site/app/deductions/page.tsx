@@ -1,6 +1,7 @@
 import Calculator from "../../components/Calculator";
 import type { Metadata } from "next";
-import PageHeader from "../../components/PageHeader";
+import PageHeader, { PageBand } from "../../components/PageHeader";
+import summit from "../../public/images/summit.jpg";
 
 export const metadata: Metadata = {
   title: "Deductions | TrainerLedger",
@@ -10,18 +11,19 @@ export const metadata: Metadata = {
 export default function DeductionsPage() {
   return (
     <main className="flex-1 overflow-x-clip">
-      {/* A short intro band: the old one pushed the form ~630px down on a phone. */}
-      <section className="bg-ink px-6 pb-10 pt-8 sm:pb-14 sm:pt-12 lg:px-12">
+      <PageBand photo={summit}>
         <PageHeader
           align="center"
+          eyebrow="Keep more of what you earn"
           title="Deductions"
           lede="Most trainers miss at least one of these. Fill in your income below, then work through each deduction category — the calculator shows roughly what each one saves you as you go."
         />
-      </section>
+      </PageBand>
 
-      <section className="bg-cream py-10 sm:py-16">
+      {/* Overlaps the photo band's faded bottom edge. */}
+      <section className="relative z-10 -mt-12 pb-16 sm:-mt-20 sm:pb-24">
         <div className="shell">
-          <Calculator />
+          <Calculator defaultDeductionsOpen />
         </div>
       </section>
     </main>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import EmbedSnippet from "../../components/EmbedSnippet";
-import PageHeader from "../../components/PageHeader";
+import PageHeader, { PageBand } from "../../components/PageHeader";
 
 export const metadata: Metadata = {
   title: "Embed This Calculator | TrainerLedger",
@@ -9,27 +9,30 @@ export const metadata: Metadata = {
 
 export default function Widget() {
   return (
-    <main className="flex-1 bg-ink px-4 pt-10 pb-16 sm:px-6 sm:pt-14 sm:pb-20">
-      <div className="mx-auto max-w-3xl">
+    <main className="flex-1 overflow-x-clip">
+      <PageBand>
         <PageHeader
           eyebrow="For site owners"
           title="Embed this calculator on your site"
           lede="Run a gym-business blog, certification program, or freelancer resource page? Drop this free tax calculator into your own page with one snippet. It stays free for your readers, no signup required, and links back to TrainerLedger."
-          className="mb-10"
         />
+      </PageBand>
 
-        <EmbedSnippet />
+      <section className="pb-20 sm:pb-24">
+        <div className="shell max-w-4xl">
+          <EmbedSnippet />
 
-        <div className="mt-10 rounded-card bg-cream text-inktext p-6 sm:p-8 shadow-card">
-          <h2 className="font-serif text-2xl mb-3">A few notes</h2>
-          <ul className="list-disc pl-5 space-y-2 text-inksoft leading-relaxed">
-            <li>The embed is the same real calculator and tax engine as the main site — same 2026 figures, kept in sync.</li>
-            <li>All calculations still run entirely in the visitor&apos;s browser. Nothing is sent to us or to you.</li>
-            <li>The embed includes a small &quot;Powered by TrainerLedger&quot; link — please keep it visible.</li>
-            <li>Adjust the iframe&apos;s <code className="bg-white px-1 rounded">height</code> if the calculator looks cut off on your layout; it doesn&apos;t auto-resize.</li>
-          </ul>
+          <div className="glass mt-6 rounded-card p-6 sm:p-8">
+            <h2 className="type-title text-offwhite">A few notes</h2>
+            <ul className="prose-dark mt-4 list-disc space-y-2 pl-5 marker:text-accent">
+              <li>The embed is the same real calculator and tax engine as the main site — same 2026 figures, kept in sync.</li>
+              <li>All calculations still run entirely in the visitor&apos;s browser. Nothing is sent to us or to you.</li>
+              <li>The embed includes a small &quot;Powered by TrainerLedger&quot; link — please keep it visible.</li>
+              <li>Adjust the iframe&apos;s <code>height</code> if the calculator looks cut off on your layout; it doesn&apos;t auto-resize.</li>
+            </ul>
+          </div>
         </div>
-      </div>
+      </section>
     </main>
   );
 }

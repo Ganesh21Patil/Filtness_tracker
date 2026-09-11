@@ -6,16 +6,37 @@ import SaveEstimateButton from "./SaveEstimateButton";
 import Link from "next/link";
 import { downloadQuarterlyIcs } from "../lib/ics";
 import Tooltip from "./Tooltip";
-import { button, field, fieldError, fieldLabel, linkOnLight } from "./ui";
-import { AlertIcon, ArrowDownIcon, ArrowRightIcon, CalendarIcon, CheckIcon, DollarIcon, InfoIcon, PrinterIcon } from "./icons";
+import { button, field, fieldError, fieldHint, fieldLabel, linkOnDark } from "./ui";
+import {
+  AlertIcon,
+  ArrowDownIcon,
+  ArrowRightIcon,
+  BriefcaseIcon,
+  BulbIcon,
+  CalendarIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  CoinsIcon,
+  DocumentIcon,
+  DollarIcon,
+  InfoIcon,
+  LockIcon,
+  PlusCircleIcon,
+  PrinterIcon,
+  ReceiptIcon,
+  ShieldIcon,
+  TrendIcon,
+  UserIcon,
+} from "./icons";
 
 // Flip to true once real ads are wired up.
 const AD_SLOT_ENABLED = false;
 
 function AdSlot() {
   return (
-    <div className="w-full p-4 border-2 border-dashed border-line bg-cream2 text-center rounded-control flex items-center justify-center min-h-[100px]">
-      <span className="text-inkmuted text-sm font-medium">Advertisement Slot (Future)</span>
+    <div className="flex min-h-[100px] w-full items-center justify-center rounded-control border-2 border-dashed border-white/15 bg-white/[.02] p-4 text-center">
+      <span className="text-sm font-medium text-dusk">Advertisement Slot (Future)</span>
     </div>
   );
 }
@@ -156,30 +177,81 @@ function labelFor(field: (typeof DEDUCTION_FIELDS)[number], workType: WorkType |
   return field.label;
 }
 
-function SectionHeading({ n, title, done, children }: { n: number; title: string; done: boolean; children?: React.ReactNode }) {
+// Short names for the chips shown while the deductions section is collapsed.
+const CHIP_LABELS: Record<DeductionKey, string> = {
+  gymRent: "Gym rent",
+  certs: "Certifications",
+  liabilityIns: "Insurance",
+  equipment: "Equipment",
+  software: "Software",
+  mileageH1: "Mileage Jan–Jun",
+  mileageH2: "Mileage Jul–Dec",
+  marketing: "Marketing",
+  apparel: "Apparel",
+  homeOffice: "Home office",
+  other: "Other",
+};
+
+const STEP_TITLES = ["About your work", "Your income", "Your deductions"];
+
+/** Numbered step badge: a check once the step holds an answer. */
+function StepBadge({ n, done, current }: { n: number; done: boolean; current: boolean }) {
   return (
-    <div className="flex items-start gap-3">
-      <span
-        aria-hidden="true"
-        className={`mt-0.5 grid size-6 flex-shrink-0 place-items-center rounded-full text-xs font-bold transition-colors ${
-          done ? "bg-accent-deep text-white" : "bg-line text-inkmuted"
-        }`}
-      >
-        {done ? <CheckIcon className="size-3.5" strokeWidth={2.5} /> : n}
-      </span>
-      <div className="min-w-0 flex-1">
-        <h2 className="text-lg font-semibold text-inktext">{title}</h2>
+    <span
+      aria-hidden="true"
+      className={`grid size-8 flex-shrink-0 place-items-center rounded-full border text-sm font-semibold tabular-nums transition-colors ${
+        done
+          ? "border-electric-light bg-electric text-white shadow-[0_0_16px_-2px_rgba(42,98,255,.8)]"
+          : current
+            ? "border-electric-light text-accent-light shadow-[0_0_18px_-4px_rgba(77,134,255,.9)]"
+            : "border-white/20 text-dusk"
+      }`}
+    >
+      {done ? <CheckIcon className="size-4" strokeWidth={2.5} /> : n}
+    </span>
+  );
+}
+
+function SectionHeading({ n, done, current, children }: { n: number; done: boolean; current: boolean; children?: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-3.5">
+      <StepBadge n={n} done={done} current={current} />
+      <div className="min-w-0 flex-1 pt-0.5">
+        <h3 className="text-lg font-semibold text-offwhite">{STEP_TITLES[n - 1]}</h3>
         {children}
       </div>
     </div>
   );
 }
 
-export default function Calculator({ embed = false }: { embed?: boolean }) {
+/** One-line note under a field, with the brand's small glowing dot. */
+function FieldNote({ id, children }: { id?: string; children: React.ReactNode }) {
+  return (
+    <p id={id} className="mt-2 flex items-start gap-2 text-xs leading-snug text-dusk">
+      <span aria-hidden="true" className="mt-[5px] size-1.5 flex-shrink-0 rounded-full bg-accent shadow-[0_0_8px_rgba(31,182,255,.9)]" />
+      {children}
+    </p>
+  );
+}
+
+export default function Calculator({
+  embed = false,
+  defaultDeductionsOpen = false,
+}: {
+  embed?: boolean;
+  /** Pages whose whole job is deductions (/deductions, the deduction finder) open that section. */
+  defaultDeductionsOpen?: boolean;
+}) {
   const [inputs, setInputs] = useState<TaxInputs>(emptyInputs);
   const [loadedFromStorage, setLoadedFromStorage] = useState(false);
   const [workType, setWorkType] = useState<WorkType | null>(null);
   const [showAllFields, setShowAllFields] = useState(false);
+  const [deductionsOpen, setDeductionsOpen] = useState(defaultDeductionsOpen);
+
+  // Deep links to #deductions (the homepage deduction tiles) land with it open.
+  useEffect(() => {
+    if (window.location.hash === "#deductions") setDeductionsOpen(true);
+  }, []);
 
   // Restore a returning visitor's numbers from their own browser — never sent
   // anywhere, consistent with the privacy policy. Skipped entirely in embed
@@ -361,202 +433,315 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
 
   const downloadIcs = () => downloadQuarterlyIcs(results.quarterlyPayment);
 
+  // Presentation only: which of the three steps already hold an answer.
+  const stepsDone = [workType !== null, hasIncome, deductionsSum > 0];
+  const currentStep = stepsDone.findIndex((d) => !d);
+  const selectedWorkType = WORK_TYPES.find((w) => w.id === workType);
+  // Shown as chips while the deductions section is collapsed, so a value that
+  // is changing the estimate is never out of sight.
+  const filledDeductions = DEDUCTION_FIELDS.filter((f) => inputs.deductions[f.key] > 0);
+
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.15fr_.85fr]">
-      {/* Form */}
-      <div ref={formRef} className="print:hidden rounded-card bg-white p-6 shadow-card md:p-9 space-y-9">
-        <section>
-          <SectionHeading n={1} title="About your work" done={workType !== null}>
-            <p className="mt-1 text-sm text-inkmuted">This just decides which fields you see. Nothing is locked away.</p>
-          </SectionHeading>
+    // Items stretch, so the form and results cards are always the same height.
+    <div className="grid gap-6 lg:grid-cols-[1.1fr_.9fr] xl:gap-7">
+      {/* Form. Container-query host: inner grids go two-up only when the card
+          itself is wide enough, whatever page it sits on. */}
+      <div ref={formRef} className="print:hidden glass-glow flex flex-col rounded-card p-6 [container-type:inline-size] md:p-8">
+        <div className="flex items-start justify-between gap-4 border-b border-white/[.08] pb-7">
+          <div className="min-w-0">
+            <p className="eyebrow text-dusk">
+              {currentStep === -1 ? "All steps filled in" : `Step ${currentStep + 1} of 3`}
+            </p>
+            <h2 className="mt-2 font-serif text-[1.9rem] leading-tight tracking-[-.015em] text-offwhite">Your tax picture</h2>
+            <p className="mt-2 text-sm leading-relaxed text-haze">Start with the essentials. Add details only when they matter to you.</p>
+          </div>
+          {/* Visual progress; the eyebrow above carries the same information as text. */}
+          <ol aria-hidden="true" className="mt-1 hidden items-center sm:flex">
+            {stepsDone.map((done, i) => (
+              <li key={i} className="flex items-center">
+                {i > 0 && <span className={`h-px w-5 ${stepsDone[i - 1] ? "bg-electric-light/70" : "bg-white/15"}`} />}
+                <StepBadge n={i + 1} done={done} current={i === currentStep} />
+              </li>
+            ))}
+          </ol>
+        </div>
 
-          <fieldset className="mt-5">
-            <legend className="mb-2 text-[13px] font-semibold text-inksoft">What kind of training work do you do?</legend>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {WORK_TYPES.map((w) => (
-                <label
-                  key={w.id}
-                  className={`relative cursor-pointer rounded-tile border p-3 pr-10 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[color:var(--ring)] ${
-                    workType === w.id ? "border-accent-deep bg-accent-deep/[.06]" : "border-line hover:border-accent-deep/60"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="workType"
-                    value={w.id}
-                    checked={workType === w.id}
-                    onChange={() => setWorkType(w.id)}
-                    className="sr-only"
-                  />
-                  <span className="block text-[13px] font-semibold text-inktext">{w.label}</span>
-                  <span className="mt-0.5 block text-xs leading-tight text-inkmuted">{w.hint}</span>
-                  {/* Visible radio state. The native input is sr-only, so without
-                      this the only cue for the choice was a faint border tint. */}
-                  <span
-                    aria-hidden="true"
-                    className={`absolute right-3 top-3 grid size-5 place-items-center rounded-full transition-colors ${
-                      workType === w.id ? "bg-accent-deep text-white" : "border border-linestrong bg-white"
-                    }`}
-                  >
-                    {workType === w.id && <CheckIcon className="size-3.5" strokeWidth={2.5} />}
-                  </span>
+        <div className="flex flex-1 flex-col gap-9 pt-8">
+          <section>
+            <SectionHeading n={1} done={stepsDone[0]} current={currentStep === 0}>
+              <p className="mt-1 text-sm text-dusk">This just decides which fields you see. Nothing is locked away.</p>
+            </SectionHeading>
+
+            <div className="mt-6 grid gap-5 [@container(min-width:34rem)]:grid-cols-2">
+              <div>
+                <label htmlFor="workType" className={fieldLabel}>
+                  Type of training work
                 </label>
-              ))}
+                <div className="relative mt-2">
+                  <BriefcaseIcon className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-dusk" />
+                  <select
+                    id="workType"
+                    value={workType ?? ""}
+                    onChange={(e) => setWorkType(e.target.value as WorkType)}
+                    aria-describedby="workType-note"
+                    className={`${field} cursor-pointer appearance-none pl-12 pr-11 ${workType ? "" : "!text-dusk"}`}
+                  >
+                    <option value="" disabled>
+                      Choose one
+                    </option>
+                    {WORK_TYPES.map((w) => (
+                      <option key={w.id} value={w.id}>
+                        {w.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDownIcon className="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2 text-accent-light" />
+                </div>
+                <FieldNote id="workType-note">{selectedWorkType ? selectedWorkType.hint : "Pick the closest match — you can change it anytime"}</FieldNote>
+              </div>
+
+              <div>
+                <label htmlFor="filingStatus" className={fieldLabel}>
+                  Filing status
+                </label>
+                <div className="relative mt-2">
+                  <UserIcon className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-dusk" />
+                  <select
+                    id="filingStatus"
+                    value={inputs.filingStatus}
+                    onChange={(e) => handleInputChange("filingStatus", e.target.value as FilingStatus)}
+                    aria-describedby="filingStatus-note"
+                    className={`${field} cursor-pointer appearance-none pl-12 pr-11`}
+                  >
+                    <option value="single">Single</option>
+                    <option value="married">Married Filing Jointly</option>
+                  </select>
+                  <ChevronDownIcon className="pointer-events-none absolute right-4 top-1/2 size-5 -translate-y-1/2 text-accent-light" />
+                </div>
+                <FieldNote id="filingStatus-note">Sets your standard deduction and tax brackets</FieldNote>
+              </div>
             </div>
-          </fieldset>
 
-          <div className="mt-5">
-            <label htmlFor="filingStatus" className={fieldLabel}>
-              Filing status
-            </label>
-            <select
-              id="filingStatus"
-              value={inputs.filingStatus}
-              onChange={(e) => handleInputChange("filingStatus", e.target.value as FilingStatus)}
-              className={`${field} cursor-pointer`}
-            >
-              <option value="single">Single</option>
-              <option value="married">Married Filing Jointly</option>
-            </select>
-          </div>
+            <div className="mt-3 flex flex-wrap items-center gap-x-6">
+              <button type="button" onClick={fillTypical} className={`inline-flex min-h-[44px] items-center rounded text-sm ${linkOnDark}`}>
+                Not sure? Fill typical trainer numbers
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  const next = !showAllFields;
+                  setShowAllFields(next);
+                  if (next) setDeductionsOpen(true);
+                }}
+                className="inline-flex min-h-[44px] items-center rounded text-sm font-semibold text-dusk underline-offset-4 hover:text-offwhite hover:underline"
+              >
+                {showAllFields ? "Use the guided view" : "Show all fields"}
+              </button>
+            </div>
+          </section>
 
-          <div className="mt-2 flex flex-wrap items-center gap-x-5">
-            <button
-              type="button"
-              onClick={fillTypical}
-              className={`inline-flex min-h-[44px] items-center rounded text-sm ${linkOnLight}`}
-            >
-              Not sure? Fill typical trainer numbers
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowAllFields((v) => !v)}
-              className="inline-flex min-h-[44px] items-center rounded text-sm font-semibold text-inkmuted underline-offset-4 hover:text-accent-deep hover:underline"
-            >
-              {showAllFields ? "Use the guided view" : "Show all fields"}
-            </button>
-          </div>
-        </section>
+          {/* 1099 + W‑2 income */}
+          <section className="border-t border-white/[.08] pt-8">
+            <SectionHeading n={2} done={stepsDone[1]} current={currentStep === 1} />
+            <div className="mt-6">
+              <label htmlFor="gross1099" className={fieldLabel}>Gross training income</label>
+              <span className={fieldHint}>Before expenses and deductions</span>
+              <MoneyInput id="gross1099" value={inputs.gross1099} onChange={(v) => handleInputChange("gross1099", v)} warning={fieldWarnings.gross1099} />
+              {/* relative: on phones the note anchors to this row, not the page. */}
+              <div className="relative mt-1 flex items-center gap-0.5 text-xs text-dusk">
+                <span>Count all of it — even payments that never came with a 1099.</span>
+                <Tooltip label="Why income without a 1099 still counts" anchor="container">
+                  <p>
+                    <strong className="text-offwhite">Not receiving a 1099 doesn&apos;t mean it isn&apos;t taxable.</strong> For 2026, clients don&apos;t have to send you a 1099‑NEC unless they paid you $2,000+ (up from $600), and payment apps only issue a 1099‑K above $20,000 and 200 transactions. Track and report all your training income yourself, regardless of what forms show up.
+                  </p>
+                </Tooltip>
+              </div>
+            </div>
 
-        {/* W-2 + 1099 income */}
-        <section>
-          <SectionHeading n={2} title="Your income" done={hasIncome} />
-          <div className="mt-5 grid gap-5 sm:grid-cols-2">
             {showW2Section && (
-              <div className={workType === "hybrid" ? "sm:order-2" : undefined}>
-                <label htmlFor="w2Wages" className={fieldLabel}>Annual W-2 wages</label>
-                <MoneyInput id="w2Wages" value={inputs.w2Wages} onChange={(v) => handleInputChange("w2Wages", v)} warning={fieldWarnings.w2Wages} />
+              <div className="mt-5 overflow-hidden rounded-tile border border-electric-light/30 bg-electric/[.05]">
+                <p className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 border-b border-electric-light/20 bg-electric/[.07] px-4 py-3 text-sm font-semibold text-accent-light">
+                  <DocumentIcon className="size-5" />
+                  W‑2 income
+                  <span className="font-normal text-dusk">— only if you also get a paycheck</span>
+                </p>
+                <div className="grid gap-5 p-4 [@container(min-width:30rem)]:grid-cols-2">
+                  <div>
+                    <label htmlFor="w2Wages" className={fieldLabel}>Annual W‑2 wages</label>
+                    <span className={fieldHint}>Income from employment</span>
+                    <MoneyInput id="w2Wages" value={inputs.w2Wages} onChange={(v) => handleInputChange("w2Wages", v)} warning={fieldWarnings.w2Wages} />
+                  </div>
+                  <div>
+                    <label htmlFor="w2Withheld" className={fieldLabel}>Tax already withheld</label>
+                    <span className={fieldHint}>From your W‑2 or pay stubs</span>
+                    <MoneyInput id="w2Withheld" value={inputs.w2Withheld} onChange={(v) => handleInputChange("w2Withheld", v)} warning={fieldWarnings.w2Withheld} />
+                  </div>
+                </div>
+                {workType === "hybrid" && (
+                  <p className="mx-4 mb-4 flex gap-2.5 rounded-control border border-electric-light/25 bg-electric/[.08] p-3 text-xs leading-relaxed text-haze">
+                    <InfoIcon className="mt-px size-4 flex-shrink-0 text-accent-light" />
+                    <span>
+                      <strong className="text-offwhite">Both boxes matter for you.</strong> Your gym already withheld Social Security on the W‑2 side, so entering those wages stops the calculator from charging you that portion twice on your private-client income.
+                    </span>
+                  </p>
+                )}
               </div>
             )}
-            <div className={workType === "hybrid" ? "sm:order-1" : undefined}>
-              <label htmlFor="gross1099" className={fieldLabel}>Gross training income</label>
-              <MoneyInput id="gross1099" value={inputs.gross1099} onChange={(v) => handleInputChange("gross1099", v)} warning={fieldWarnings.gross1099} />
-            </div>
-          </div>
-          {workType === "hybrid" && (
-            <p className="mt-4 text-xs leading-relaxed text-inksoft bg-accent-deep/[.06] border border-accent-deep/20 rounded-control p-3">
-              <strong>Both boxes matter for you.</strong> Your gym already withheld Social Security on the W-2 side, so entering those wages stops the calculator from charging you that portion twice on your private-client income.
-            </p>
-          )}
-          <p className="mt-4 text-xs leading-relaxed text-inkmuted bg-cream2 border border-line rounded-control p-3">
-            <strong className="text-inksoft">Not receiving a 1099 doesn&apos;t mean it isn&apos;t taxable.</strong> For 2026, clients don&apos;t have to send you a 1099-NEC unless they paid you $2,000+ (up from $600), and payment apps only issue a 1099-K above $20,000 and 200 transactions. Track and report all your training income yourself, regardless of what forms show up.
-          </p>
-          {showW2Section && (
-            <div className="mt-5">
-              <label htmlFor="w2Withheld" className={fieldLabel}>Tax already withheld from W-2</label>
-              <MoneyInput
-                id="w2Withheld"
-                value={inputs.w2Withheld}
-                onChange={(v) => handleInputChange("w2Withheld", v)}
-                warning={fieldWarnings.w2Withheld}
-                className="sm:max-w-[240px]"
-              />
-            </div>
-          )}
-        </section>
+          </section>
 
-        {/* Deductions */}
-        <section id="deductions" className="border-t border-line pt-7 scroll-mt-24">
-          <SectionHeading n={3} title="Your deductions" done={deductionsSum > 0}>
-            <p className="mt-1 text-sm text-inkmuted">Most trainers miss at least one.</p>
-          </SectionHeading>
+          {/* Deductions. Collapsed by default so the form stays short (the
+              owner's call, Sept 2026) — but what's inside is never out of
+              sight: while collapsed, every non-zero deduction shows as a chip
+              with its amount, so the estimate stays explainable. */}
+          <section id="deductions" className="scroll-mt-24 border-t border-white/[.08] pt-8">
+            <SectionHeading n={3} done={stepsDone[2]} current={currentStep === 2}>
+              <p className="mt-1 text-sm text-dusk">Most trainers miss at least one.</p>
+            </SectionHeading>
 
-          <div className="mt-4 flex items-end justify-between gap-4">
-            <p className="max-w-[24ch] text-xs text-inkmuted">
-              {workType === null
-                ? "Pick a work type above and this list narrows to what applies to you."
-                : "Showing what usually applies to your setup."}
-            </p>
-            <div className="whitespace-nowrap text-right">
-              <p className="text-sm font-semibold text-accent-deep">{money(deductionsSum)} found</p>
-              {estimatedSavings > 0 && <p className="text-xs text-inkmuted">≈ {money(estimatedSavings)} saved</p>}
-            </div>
-          </div>
-
-          {/* One column between lg and xl: the form column is only ~530px wide
-              there, and two cards per row squeezed labels onto four lines. */}
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-            {visibleDeductions.map((key) => {
-              const field = DEDUCTION_FIELDS.find((f) => f.key === key)!;
-              return (
-                <DeductionInput
-                  key={key}
-                  id={`deduction-${key}`}
-                  label={labelFor(field, workType)}
-                  hint={field.hint}
-                  prefix={field.prefix}
-                  tooltipText={field.tooltipText}
-                  learnMoreLink={field.learnMoreLink}
-                  value={inputs.deductions[key]}
-                  onChange={(v) => handleDeductionChange(key, v)}
-                  warning={fieldWarnings[`deductions.${key}`]}
-                  savings={fieldSavings[key]}
-                />
-              );
-            })}
-          </div>
-
-          {hiddenDeductionCount > 0 && (
             <button
               type="button"
-              onClick={() => setShowAllFields(true)}
-              className="mt-4 w-full rounded-tile border border-dashed border-line py-3 text-sm font-semibold text-accent-deep transition hover:border-accent-deep/60 hover:bg-accent-deep/[.04]"
+              aria-expanded={deductionsOpen}
+              aria-controls="deduction-fields"
+              onClick={() => setDeductionsOpen((o) => !o)}
+              className={`group mt-5 flex w-full items-center gap-4 rounded-tile border p-4 text-left transition-colors ${
+                deductionsOpen
+                  ? "border-electric-light/50 bg-electric/[.08]"
+                  : "border-dashed border-electric-light/45 bg-electric/[.04] hover:border-electric-light/80 hover:bg-electric/[.09]"
+              }`}
             >
-              Show {hiddenDeductionCount} more {hiddenDeductionCount === 1 ? "deduction" : "deductions"} — most trainers miss at least one
+              <PlusCircleIcon
+                className={`size-9 flex-shrink-0 text-accent-light motion-safe:transition-transform motion-safe:duration-200 ${deductionsOpen ? "rotate-45" : ""}`}
+                strokeWidth={1.5}
+              />
+              <span className="min-w-0 flex-1">
+                <span className="eyebrow block text-accent-light">Optional</span>
+                <span className="mt-1 block font-serif text-xl text-offwhite">
+                  {deductionsOpen ? "Hide deductions" : filledDeductions.length > 0 ? "Edit your deductions" : "Add deductions"}
+                </span>
+                <span className="mt-0.5 block text-xs text-dusk">
+                  {deductionsSum > 0 ? (
+                    <>
+                      <span className="font-semibold text-accent-light">{money(deductionsSum)} found</span>
+                      {estimatedSavings > 0 && <> · ≈ {money(estimatedSavings)} saved in tax</>}
+                    </>
+                  ) : (
+                    "Add only what applies to you."
+                  )}
+                </span>
+              </span>
+              <ChevronDownIcon
+                className={`size-5 flex-shrink-0 text-dusk group-hover:text-offwhite motion-safe:transition-transform motion-safe:duration-200 ${deductionsOpen ? "rotate-180" : ""}`}
+              />
             </button>
-          )}
-        </section>
 
-        {/* Ad slot: kept in the codebase for when real ads are wired up, but not
-            rendered — a visible placeholder isn't something a live site should ship. */}
-        {AD_SLOT_ENABLED && <AdSlot />}
+            {!deductionsOpen && filledDeductions.length > 0 && (
+              <ul aria-label="Deductions in your estimate" className="mt-3 flex flex-wrap gap-2">
+                {filledDeductions.map((f) => (
+                  <li key={f.key} className="rounded-full border border-white/10 bg-white/[.04] px-3 py-1.5 text-xs text-haze">
+                    {f.key === "gymRent" && workType === "studio" ? "Studio rent" : CHIP_LABELS[f.key]}{" "}
+                    <span className="font-semibold tabular-nums text-offwhite">
+                      {f.prefix ? `${inputs.deductions[f.key].toLocaleString("en-US")} ${f.prefix}` : money(inputs.deductions[f.key])}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <div id="deduction-fields" hidden={!deductionsOpen} className="motion-safe:animate-[fade-in_200ms_ease-out]">
+              <p className="mt-5 text-xs text-dusk">
+                {workType === null
+                  ? "Pick a work type above and this list narrows to what applies to you."
+                  : "Showing what usually applies to your setup."}
+              </p>
+
+              {/* Two-up only on a genuinely wide card; narrower, the labels
+                  squeezed onto three lines beside the amount box. */}
+              <div className="mt-3 grid gap-2.5 [@container(min-width:48rem)]:grid-cols-2">
+                {visibleDeductions.map((key) => {
+                  const field = DEDUCTION_FIELDS.find((f) => f.key === key)!;
+                  return (
+                    <DeductionInput
+                      key={key}
+                      id={`deduction-${key}`}
+                      label={labelFor(field, workType)}
+                      hint={field.hint}
+                      prefix={field.prefix}
+                      tooltipText={field.tooltipText}
+                      learnMoreLink={field.learnMoreLink}
+                      value={inputs.deductions[key]}
+                      onChange={(v) => handleDeductionChange(key, v)}
+                      warning={fieldWarnings[`deductions.${key}`]}
+                      savings={fieldSavings[key]}
+                    />
+                  );
+                })}
+              </div>
+
+              {hiddenDeductionCount > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllFields(true)}
+                  className="mt-2 inline-flex min-h-[44px] items-center gap-2 rounded text-sm font-semibold text-accent-light hover:text-offwhite"
+                >
+                  <PlusCircleIcon className="size-5" />
+                  Show {hiddenDeductionCount} more {hiddenDeductionCount === 1 ? "deduction" : "deductions"}
+                </button>
+              )}
+            </div>
+          </section>
+
+          {/* Ad slot: kept in the codebase for when real ads are wired up, but not
+              rendered — a visible placeholder isn't something a live site should ship. */}
+          {AD_SLOT_ENABLED && <AdSlot />}
+
+          {/* mt-auto: when the results card is taller, this settles at the
+              bottom of the stretched form card instead of floating mid-card. */}
+          <div className="mt-auto border-t border-white/[.08] pt-6">
+            {/* Below lg the results sit under this form. */}
+            {hasIncome && (
+              <button type="button" onClick={scrollToResults} className={`${button({ variant: "electric", size: "lg", full: true })} mb-4 lg:hidden`}>
+                See my estimate
+                <ArrowDownIcon className="size-4" />
+              </button>
+            )}
+            <p className="flex items-center justify-center gap-2 text-center text-xs text-dusk">
+              <LockIcon className="size-4 flex-shrink-0" />
+              {embed ? "Nothing you type is stored or sent anywhere." : "Your numbers stay in this browser — private and secure."}
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Results. lg:self-start matters: grid items stretch to the row height
-          by default, and a stretched item has no room to stick — the panel
-          scrolled away and left an empty block beside the deductions.
-          top-24 clears the 72px sticky header. */}
+      {/* Results. The panel stretches to the form's height so the two cards
+          always line up; its contents stick inside it while a long form
+          scrolls (top-28 clears the 72px header; the embed has none).
+          overflow-clip, not overflow-hidden: hidden makes a scroll container
+          and silently disables the sticky child. */}
       <aside
         ref={asideRef}
         tabIndex={-1}
         aria-label="Your tax estimate"
-        className="print:col-span-2 relative scroll-mt-24 overflow-hidden rounded-card bg-deep p-7 text-white md:p-9 lg:sticky lg:top-24 lg:self-start"
+        className="print:col-span-2 glass-glow relative flex scroll-mt-24 flex-col overflow-clip rounded-card p-6 text-offwhite md:p-8"
       >
-        <div className="pointer-events-none absolute -right-20 -top-16 size-64 rounded-full bg-accent/20 blur-3xl" />
-        <div className={`relative flex flex-col ${hasIncome ? "min-h-[420px]" : ""}`}>
-          <div className="flex items-center justify-between">
-            <p className="eyebrow text-accent-light">Your tax estimate</p>
-            <Tooltip label="What is SE tax?" tone="dark">
-              {"Self-employment (SE) tax covers Social Security and Medicare — the share normally split between an employer and employee, but paid entirely by you when you're self-employed."}
-            </Tooltip>
+        <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 size-72 rounded-full bg-electric/25 blur-3xl" />
+        <div className={`relative flex flex-col [container-type:inline-size] lg:sticky ${embed ? "lg:top-6" : "lg:top-28"}`}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <p className="eyebrow text-haze">Your tax estimate</p>
+              <span className="rounded-full border border-white/15 bg-white/[.04] px-2.5 py-1 text-xs font-semibold tabular-nums text-offwhite">
+                {TAX_CONFIG.TAX_YEAR}
+              </span>
+            </div>
+            {/* Saving needs an account, and the embed must stay anonymous. */}
+            {!embed && hasIncome && <SaveEstimateButton inputs={inputs} results={results} />}
           </div>
 
           {!hasIncome ? (
             <EmptyResultsState />
           ) : (
-            <div aria-live="polite" className="flex flex-1 flex-col motion-safe:animate-[results-in_320ms_ease-out]">
+            <div aria-live="polite" className="flex flex-col motion-safe:animate-[results-in_320ms_ease-out]">
               {deductionsExceedIncome && (
-                <div className="mt-6 flex items-start gap-2 rounded-control bg-amber-400/10 border border-amber-400/30 px-3 py-2.5 text-xs text-amber-200">
+                <div className="mt-6 flex items-start gap-2 rounded-control border border-gold/35 bg-gold/[.08] px-3 py-2.5 text-xs text-gold-light">
                   <AlertIcon className="mt-px size-4 flex-shrink-0" />
                   <span>
                     Your deductions ({money(deductionsSum)}) exceed your gross training income. Double-check your numbers — profit below $0 is shown as $0.
@@ -565,30 +750,36 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
               )}
 
               {results.qbiAboveSimpleThreshold && (
-                <div className="mt-6 flex items-start gap-2 rounded-control bg-amber-400/10 border border-amber-400/30 px-3 py-2.5 text-xs text-amber-200">
+                <div className="mt-6 flex items-start gap-2 rounded-control border border-gold/35 bg-gold/[.08] px-3 py-2.5 text-xs text-gold-light">
                   <AlertIcon className="mt-px size-4 flex-shrink-0" />
                   <span>
-                    Your income is above the $201,750 / $403,500 QBI phase-in threshold, where the real deduction gets more complex (W-2 wage and property limits, possible SSTB rules). This estimate uses a simplified flat calculation above that point — talk to a CPA.
+                    Your income is above the $201,750 / $403,500 QBI phase-in threshold, where the real deduction gets more complex (W‑2 wage and property limits, possible SSTB rules). This estimate uses a simplified flat calculation above that point — talk to a CPA.
                   </span>
                 </div>
               )}
 
               {/* Quarterly payment is the most actionable number on the page — it's what a trainer actually has to go do something about four times a year. */}
-              <p className="mt-8 eyebrow text-accent-light">Your quarterly payment</p>
-              <p key={results.quarterlyPayment} className="value-pop mt-1 font-serif text-6xl md:text-7xl tracking-[-.06em] tabular-nums">
-                {money(results.quarterlyPayment)}
-              </p>
-              <p className="mt-2 text-sm text-haze">
-                Due <strong className="text-white">Apr 15, Jun 15, Sep 15 &amp; Jan 15</strong> — {money(results.amountOwed)} estimated total for the year
+              <div className="mt-7 flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="eyebrow text-haze">Quarterly payment</p>
+                  <p key={results.quarterlyPayment} className="value-pop mt-2 type-figure text-glow text-[3.6rem] leading-none md:text-7xl">
+                    {money(results.quarterlyPayment)}
+                  </p>
+                </div>
+                <PlanTile />
+              </div>
+              <p className="mt-4 text-sm leading-relaxed text-haze">
+                Set aside this amount by <strong className="text-offwhite">Apr 15, Jun 15, Sep 15 &amp; Jan 15</strong> — {money(results.amountOwed)} for the year.
               </p>
 
               {/* Action hierarchy: one primary (the calendar, which is what a
                   trainer has to act on four times a year), one secondary (the
-                  breakdown), and quiet tertiary actions below. */}
+                  breakdown), and a quiet tertiary action. */}
               <div className="mt-6 flex flex-col gap-3">
-                <button type="button" onClick={downloadIcs} className={button({ size: "lg", full: true })}>
+                <button type="button" onClick={downloadIcs} className={button({ variant: "glow", size: "lg", full: true })}>
                   <CalendarIcon className="size-5" />
-                  Add due dates to calendar (.ics)
+                  Add due dates to calendar
+                  <ChevronRightIcon className="size-4" />
                 </button>
                 {!embed && (
                   <Link href="/dashboard" className={button({ variant: "secondary", size: "lg", full: true })}>
@@ -598,32 +789,40 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
                 )}
               </div>
 
-              {/* Neither tertiary action exists in embed mode: printing from inside
-                  a third-party site's iframe is unpredictable, and the embed must stay
-                  anonymous — a sign-in link would hijack the host page's iframe. */}
+              {/* Printing from inside a third-party site's iframe is unpredictable. */}
               {!embed && (
-                <div className="mt-2 flex flex-wrap items-center justify-center">
+                <div className="mt-2 flex justify-center">
                   <button type="button" onClick={() => window.print()} className={button({ variant: "ghost", size: "sm" })}>
                     <PrinterIcon className="size-4" />
                     Print / save as PDF
                   </button>
-                  <SaveEstimateButton inputs={inputs} results={results} />
                 </div>
               )}
 
-              <div className="mt-8 space-y-3.5 border-y border-white/15 py-6 text-sm">
-                <ResultRow label="Net self-employment profit" value={results.netSeProfit} />
-                <ResultRow label="Total SE tax" value={results.seTax.total} />
-                <ResultRow label="Federal income tax" value={results.federalTax} />
-                {inputs.w2Withheld > 0 && <ResultRow label="W-2 tax already withheld" value={-inputs.w2Withheld} />}
-                <ResultRow label="Total estimated liability" value={results.totalLiability} bold />
-              </div>
+              <TaxBreakdownBar
+                w2Wages={inputs.w2Wages}
+                gross1099={inputs.gross1099}
+                seTax={results.seTax.total}
+                federalTax={results.federalTax}
+                money={money}
+                info={
+                  <Tooltip label="What is SE tax?" align="left">
+                    {"Self-employment (SE) tax covers Social Security and Medicare — the share normally split between an employer and employee, but paid entirely by you when you're self-employed."}
+                  </Tooltip>
+                }
+              />
 
-              <TaxBreakdownBar w2Wages={inputs.w2Wages} gross1099={inputs.gross1099} seTax={results.seTax.total} federalTax={results.federalTax} money={money} />
+              <div className="mt-6 divide-y divide-white/[.07] rounded-tile border border-white/10 bg-white/[.02] text-sm">
+                <ResultRow icon={TrendIcon} label="Net self-employment profit" value={results.netSeProfit} />
+                <ResultRow icon={ShieldIcon} label="Total SE tax" value={results.seTax.total} />
+                <ResultRow icon={DocumentIcon} label="Federal income tax" value={results.federalTax} />
+                {inputs.w2Withheld > 0 && <ResultRow icon={ReceiptIcon} label="W‑2 tax already withheld" value={-inputs.w2Withheld} />}
+                <ResultRow icon={CoinsIcon} label="Total estimated liability" value={results.totalLiability} bold />
+              </div>
 
               {/* TODO: LLC vs S-Corp savings indicator — needs CPA-reviewed logic before shipping real numbers */}
               {results.netSeProfit > 80000 && (
-                <p className="mt-6 flex items-start justify-center gap-1.5 text-center text-xs text-haze">
+                <p className="mt-5 flex items-start justify-center gap-1.5 text-center text-xs text-haze">
                   <InfoIcon className="size-4 flex-shrink-0 text-accent-light" />
                   You&apos;re earning enough that an S-Corp might save you money. (Comparison coming soon)
                 </p>
@@ -631,27 +830,39 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
             </div>
           )}
 
-          <p className="mt-6 text-center text-xs leading-relaxed text-dusk">
-            For planning purposes only — not formal tax or legal advice.
-          </p>
+          <div className="mt-6 flex items-center justify-between gap-3 rounded-control border border-white/10 bg-white/[.02] py-1 pl-4 pr-2">
+            <p className="flex items-center gap-2.5 py-2 text-xs leading-snug text-dusk">
+              <BulbIcon className="size-5 flex-shrink-0 text-gold" />
+              This is an estimate, not tax or legal advice.
+            </p>
+            <Link
+              href="/terms#disclaimer"
+              target={embed ? "_blank" : undefined}
+              rel={embed ? "noopener noreferrer" : undefined}
+              className="inline-flex min-h-[44px] flex-shrink-0 items-center gap-1 rounded px-2 text-xs font-semibold text-accent-light hover:text-offwhite"
+            >
+              Learn more
+              <ArrowRightIcon className="size-3.5" />
+            </Link>
+          </div>
         </div>
       </aside>
 
       {/* Mobile summary bar (see showSummaryBar). Not in embed mode: a fixed bar
-          inside a host page's iframe would float over their layout. Opaque
-          bg-deep on purpose — it keeps the cyan focus ring (see globals.css). */}
+          inside a host page's iframe would float over their layout. Opaque on
+          purpose, so the page never shows through behind the number. */}
       {!embed && (
         <div
-          className={`print:hidden fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-deep px-4 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 text-white shadow-[0_-12px_32px_rgba(12,12,28,.35)] transition-[transform,visibility] duration-200 ease-out motion-reduce:transition-none lg:hidden ${
+          className={`print:hidden fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-panel px-4 pb-[max(.75rem,env(safe-area-inset-bottom))] pt-3 text-offwhite shadow-[0_-12px_32px_rgba(0,0,0,.55)] transition-[transform,visibility] duration-200 ease-out motion-reduce:transition-none lg:hidden ${
             showSummaryBar ? "visible translate-y-0" : "invisible translate-y-full"
           }`}
         >
           <div className="mx-auto flex max-w-xl items-center justify-between gap-4">
             <div className="min-w-0">
               <p className="eyebrow text-accent-light">Quarterly payment</p>
-              <p className="font-serif text-2xl tracking-[-.04em] tabular-nums">{money(results.quarterlyPayment)}</p>
+              <p className="type-figure text-2xl">{money(results.quarterlyPayment)}</p>
             </div>
-            <button type="button" onClick={scrollToResults} className={button({ variant: "secondary", size: "sm" })}>
+            <button type="button" onClick={scrollToResults} className={button({ variant: "electric", size: "sm" })}>
               See estimate
               <ArrowDownIcon className="size-4" />
             </button>
@@ -662,47 +873,137 @@ export default function Calculator({ embed = false }: { embed?: boolean }) {
   );
 }
 
-function TaxBreakdownBar({ w2Wages, gross1099, seTax, federalTax, money }: { w2Wages: number; gross1099: number; seTax: number; federalTax: number; money: (n: number) => string }) {
+/** Decorative gold chart tile beside the quarterly figure. Only shown when
+ *  the results panel is wide enough to hold both without squeezing the number. */
+function PlanTile() {
+  return (
+    <div
+      aria-hidden="true"
+      className="relative hidden h-[112px] w-[128px] flex-shrink-0 overflow-hidden rounded-tile border border-gold/30 bg-gradient-to-br from-deep3 via-deep2 to-ink shadow-[0_0_30px_-12px_rgba(217,178,95,.6)] [@container(min-width:26rem)]:block"
+    >
+      <div className="absolute inset-0 bg-[radial-gradient(80%_70%_at_85%_10%,rgba(217,178,95,.22),transparent_60%)]" />
+      <svg viewBox="0 0 128 112" className="absolute inset-0 size-full text-gold">
+        <polyline
+          points="6,82 22,74 34,79 50,62 64,67 80,46 96,50 118,20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+          className="drop-shadow-[0_0_6px_rgba(217,178,95,.9)]"
+        />
+        <circle cx="118" cy="20" r="2.4" fill="currentColor" className="text-gold-light" />
+        <circle cx="80" cy="46" r="1.2" fill="currentColor" opacity=".7" />
+        <circle cx="100" cy="14" r=".8" fill="currentColor" opacity=".6" />
+        <circle cx="60" cy="30" r=".7" fill="currentColor" opacity=".45" />
+      </svg>
+      <p className="absolute bottom-2.5 left-3 font-serif text-[15px] leading-[1.1] text-offwhite">
+        Plan smart.
+        <br />
+        Keep more.
+      </p>
+    </div>
+  );
+}
+
+function TaxBreakdownBar({
+  w2Wages,
+  gross1099,
+  seTax,
+  federalTax,
+  money,
+  info,
+}: {
+  w2Wages: number;
+  gross1099: number;
+  seTax: number;
+  federalTax: number;
+  money: (n: number) => string;
+  info?: React.ReactNode;
+}) {
   const total = w2Wages + gross1099;
   if (total <= 0) return null;
   const seTaxPct = Math.max(0, Math.min(100, (seTax / total) * 100));
   const fedTaxPct = Math.max(0, Math.min(100 - seTaxPct, (federalTax / total) * 100));
   const takeHomePct = Math.max(0, 100 - seTaxPct - fedTaxPct);
+  const takeHome = Math.max(0, total - seTax - federalTax);
+
+  const legend = [
+    { label: "Self-employment", value: seTax, pct: seTaxPct, dot: "bg-accent" },
+    { label: "Federal", value: federalTax, pct: fedTaxPct, dot: "bg-violet" },
+    { label: "Take-home", value: takeHome, pct: takeHomePct, dot: "bg-white/40" },
+  ];
 
   return (
-    <div className="mt-6">
-      <p className="eyebrow text-accent-light mb-3">Where your income goes</p>
-      <div className="flex h-3 w-full overflow-hidden rounded-full bg-white/10" role="img" aria-label={`${seTaxPct.toFixed(0)}% self-employment tax, ${fedTaxPct.toFixed(0)}% federal tax, ${takeHomePct.toFixed(0)}% take-home`}>
-        <div className="h-full bg-accent" style={{ width: `${seTaxPct}%` }} />
-        <div className="h-full bg-accent-soft/60" style={{ width: `${fedTaxPct}%` }} />
-        <div className="h-full bg-white/25" style={{ width: `${takeHomePct}%` }} />
+    <div className="mt-8 border-t border-white/[.08] pt-6">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-0.5">
+            <p className="eyebrow text-haze">Where your income goes</p>
+            {info}
+          </div>
+          <p className="text-xs text-dusk">A simple estimate, updated live</p>
+        </div>
+        <div className="text-right">
+          <p className="font-semibold tabular-nums text-offwhite sm:text-lg">{money(takeHome)}</p>
+          <p className="text-xs text-dusk">take-home</p>
+        </div>
       </div>
-      <div className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5 text-xs text-haze">
-        <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-accent" />SE tax {money(seTax)}</span>
-        <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-accent-soft/60" />Federal tax {money(federalTax)}</span>
-        <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-white/40" />Take-home {money(Math.max(0, total - seTax - federalTax))}</span>
+
+      <div aria-hidden="true" className="mt-5 flex justify-between text-xs tabular-nums text-fog">
+        {[0, 25, 50, 75, 100].map((t) => (
+          <span key={t}>{t}%</span>
+        ))}
       </div>
+      <div
+        className="relative mt-2 flex h-2.5 w-full overflow-hidden rounded-full bg-white/10"
+        role="img"
+        aria-label={`${seTaxPct.toFixed(0)}% self-employment tax, ${fedTaxPct.toFixed(0)}% federal tax, ${takeHomePct.toFixed(0)}% take-home`}
+      >
+        <div className="h-full bg-accent shadow-[0_0_12px_rgba(31,182,255,.8)]" style={{ width: `${seTaxPct}%` }} />
+        <div className="h-full bg-violet" style={{ width: `${fedTaxPct}%` }} />
+        <div className="h-full bg-white/30" style={{ width: `${takeHomePct}%` }} />
+        {[25, 50, 75].map((t) => (
+          <span key={t} className="absolute inset-y-0 w-px bg-ink/70" style={{ left: `${t}%` }} />
+        ))}
+      </div>
+
+      {/* Rows on a narrow panel, three columns once it has room — the
+          columns used to break "Self-employment" across two lines. */}
+      <dl className="mt-4 grid gap-2 [@container(min-width:27rem)]:grid-cols-3 [@container(min-width:27rem)]:gap-3">
+        {legend.map((l) => (
+          <div key={l.label} className="flex min-w-0 items-baseline justify-between gap-3 [@container(min-width:27rem)]:block">
+            <dt className="flex items-center gap-1.5 whitespace-nowrap text-xs text-dusk">
+              <span aria-hidden="true" className={`size-2 flex-shrink-0 rounded-full ${l.dot}`} />
+              {l.label}
+            </dt>
+            <dd className="whitespace-nowrap text-right [@container(min-width:27rem)]:mt-1 [@container(min-width:27rem)]:text-left">
+              <span className="text-sm font-semibold tabular-nums text-offwhite [@container(min-width:27rem)]:block">{money(l.value)}</span>
+              <span className="ml-2 text-xs tabular-nums text-fog [@container(min-width:27rem)]:ml-0 [@container(min-width:27rem)]:block">{l.pct.toFixed(1)}%</span>
+            </dd>
+          </div>
+        ))}
+      </dl>
     </div>
   );
 }
 
 function EmptyResultsState() {
   return (
-    <div className="flex flex-col items-center text-center py-6">
-      <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-3 text-accent-light">
-        <DollarIcon className="size-5" />
+    <div className="flex flex-col items-center py-8 text-center">
+      <div className="mb-4 grid size-14 place-items-center rounded-full border border-electric-light/40 bg-electric/10 text-accent-light shadow-[0_0_30px_-8px_rgba(42,98,255,.8)]">
+        <DollarIcon className="size-6" />
       </div>
-      <p className="text-white font-semibold mb-1">Your estimate will appear here</p>
-      <p className="text-sm text-dusk max-w-[250px]">Add your income on the left and this panel fills in.</p>
-      <ul className="mt-5 w-full max-w-[250px] space-y-2 text-left text-xs text-dusk">
+      <p className="mb-1 font-serif text-2xl text-offwhite">Your estimate will appear here</p>
+      <p className="max-w-[260px] text-sm text-dusk">Add your income and this panel fills in, live.</p>
+      <ul className="mt-6 w-full max-w-[280px] space-y-2.5 text-left text-sm text-haze">
         {[
           "What to set aside each quarter",
           "The four IRS due dates, downloadable",
           "Self-employment tax and federal tax, split out",
           "Where your income actually goes",
         ].map((item) => (
-          <li key={item} className="flex items-start gap-2">
-            <span aria-hidden="true" className="mt-1.5 size-1.5 flex-shrink-0 rounded-full bg-accent/50" />
+          <li key={item} className="flex items-start gap-2.5">
+            <CheckIcon className="mt-0.5 size-4 flex-shrink-0 text-accent" strokeWidth={2.25} />
             {item}
           </li>
         ))}
@@ -729,7 +1030,7 @@ function MoneyInput({
   return (
     <div className={className}>
       <div className="relative">
-        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[17px] font-medium text-inkmuted">$</span>
+        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-field font-medium text-haze">$</span>
         <input
           id={id}
           type="number"
@@ -738,7 +1039,7 @@ function MoneyInput({
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
           onWheel={(e) => e.currentTarget.blur()}
-          className={`${field} pl-8`}
+          className={`${field} pl-9`}
           placeholder="0"
           aria-describedby={warning ? `${id}-warning` : undefined}
           aria-invalid={warning ? true : undefined}
@@ -781,28 +1082,28 @@ function DeductionInput({
 
   return (
     // relative: on phones the tooltip anchors to the whole card. focus-within
-    // turns the card border teal, so the compact underline field has a focus
-    // state you can see from across the form, not just a 1px colour change.
-    <div className="relative flex min-h-[84px] items-center justify-between gap-3 rounded-tile border border-line p-3.5 transition-colors hover:border-accent-deep/60 focus-within:border-accent-deep">
-      <div className="flex min-w-0 flex-1 items-start gap-1">
+    // lights the card, so the compact field has a focus state you can see
+    // from across the form, not just its own border.
+    <div className="relative flex items-center justify-between gap-3 rounded-tile border border-white/10 bg-white/[.025] py-3 pl-4 pr-3 transition-colors hover:border-white/20 focus-within:border-electric-light/70 focus-within:bg-electric/[.06]">
+      <div className="flex min-w-0 flex-1 items-center gap-0.5">
         <div className="min-w-0 flex-1">
-          <label htmlFor={id} className="block text-[13px] font-semibold text-inktext">{label}</label>
-          <p className="mt-0.5 text-xs leading-snug text-inkmuted">{hint}</p>
+          <label htmlFor={id} className="block text-label font-semibold leading-snug text-offwhite">{label}</label>
+          <p className="mt-0.5 text-xs leading-snug text-dusk">{hint}</p>
         </div>
         {tooltipText && (
           <Tooltip label={`More information about ${label}`} anchor="container">
             <p>{tooltipText}</p>
             {learnMoreLink && (
-              <a href={learnMoreLink} target="_blank" rel="noopener noreferrer" className={`mt-2 inline-block rounded ${linkOnLight}`}>
+              <a href={learnMoreLink} target="_blank" rel="noopener noreferrer" className={`mt-2 inline-block rounded ${linkOnDark}`}>
                 Learn more
               </a>
             )}
           </Tooltip>
         )}
       </div>
-      <div className="flex-shrink-0 text-right">
-        <div className="flex min-h-[44px] items-center gap-1 border-b border-linestrong pb-1 transition-[border-color,box-shadow] focus-within:border-accent-deep focus-within:shadow-[0_1px_0_0_theme(colors.accent.deep)]">
-          {prefix === "$" && <span className="text-sm text-inkmuted">$</span>}
+      <div className="flex w-[7.25rem] flex-shrink-0 flex-col items-end">
+        <div className="flex h-11 w-full items-center gap-1 rounded-control border border-edge bg-ink/40 px-3 transition-colors focus-within:border-electric-light focus-within:shadow-[0_0_0_3px_rgba(42,98,255,.2)]">
+          {prefix === "$" && <span className="text-sm text-dusk">$</span>}
           <input
             id={id}
             type="number"
@@ -811,30 +1112,43 @@ function DeductionInput({
             value={value || ""}
             onChange={(e) => onChange(e.target.value)}
             onWheel={(e) => e.currentTarget.blur()}
-            // The card border and the thickened underline carry focus; the global
-            // outline would draw a box around this deliberately bare input.
-            className="w-20 bg-transparent text-right font-semibold tabular-nums text-inktext focus-visible:outline-none"
+            // The box border and halo carry focus; the global outline would
+            // draw a second ring around the bare input inside it.
+            className="w-full min-w-0 bg-transparent text-right font-semibold tabular-nums text-offwhite placeholder:text-fog focus-visible:outline-none"
             placeholder="0"
             aria-describedby={warning ? `${id}-warning` : undefined}
             aria-invalid={warning ? true : undefined}
           />
-          {prefix !== "$" && <span className="text-xs text-inkmuted">{prefix}</span>}
+          {prefix !== "$" && <span className="text-xs text-dusk">{prefix}</span>}
         </div>
         {warning ? (
-          <p id={`${id}-warning`} role="alert" className={`${fieldError} justify-end`}>{warning}</p>
+          <p id={`${id}-warning`} role="alert" className={`${fieldError} justify-end text-right`}>{warning}</p>
         ) : savings && savings > 0.5 ? (
-          <p className="mt-1 text-xs text-accent-deep">≈ {money(savings)} saved</p>
+          <p className="mt-1 text-xs text-accent-light">≈ {money(savings)} saved</p>
         ) : null}
       </div>
     </div>
   );
 }
 
-function ResultRow({ label, value, bold }: { label: string; value: number; bold?: boolean }) {
+function ResultRow({
+  icon: Icon,
+  label,
+  value,
+  bold,
+}: {
+  icon: (p: React.SVGProps<SVGSVGElement>) => React.ReactElement;
+  label: string;
+  value: number;
+  bold?: boolean;
+}) {
   return (
-    <div className="flex justify-between items-center gap-3">
-      <span className="text-haze">{label}</span>
-      <span key={value} className={`value-pop tabular-nums ${bold ? "font-semibold text-white" : "font-medium text-offwhite"}`}>
+    <div className="flex items-center justify-between gap-3 px-4 py-3.5">
+      <span className={`flex items-center gap-3 ${bold ? "font-semibold text-offwhite" : "text-haze"}`}>
+        <Icon className="size-5 flex-shrink-0 text-dusk" />
+        {label}
+      </span>
+      <span key={value} className={`value-pop tabular-nums text-offwhite ${bold ? "text-base font-semibold" : "font-medium"}`}>
         {value < 0 ? "− " : ""}
         {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Math.abs(value))}
       </span>

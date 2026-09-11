@@ -8,7 +8,7 @@ import { createClient } from "../lib/supabase/client";
 import { isSupabaseConfigured } from "../lib/supabase/config";
 import Logo from "./Logo";
 import { button } from "./ui";
-import { CloseIcon, MenuIcon } from "./icons";
+import { ArrowRightIcon, CloseIcon, MenuIcon } from "./icons";
 
 const navLinks = [
   { href: "/calculator", label: "Calculator" },
@@ -33,6 +33,9 @@ function isActive(pathname: string, href: string) {
 export default function Header() {
   const [menu, setMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  // Transitions switch on after the first frame. Loading a page already
+  // scrolled used to fade the header in over content for 300ms.
+  const [animateHeader, setAnimateHeader] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const pathname = usePathname() ?? "/";
   const router = useRouter();
@@ -42,8 +45,12 @@ export default function Header() {
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
+    const frame = requestAnimationFrame(() => setAnimateHeader(true));
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   // While the full-screen mobile menu is open it behaves like a modal: body
@@ -100,24 +107,29 @@ export default function Header() {
   return (
     <header
       ref={headerRef}
-      className={`sticky top-0 z-50 w-full border-b transition-[background-color,backdrop-filter,border-color] duration-300 ${
-        scrolled ? "border-white/10 bg-ink/80 backdrop-blur-md" : "border-transparent bg-transparent"
+      className={`sticky top-0 z-50 w-full border-b ${animateHeader ? "transition-[background-color,backdrop-filter,border-color] duration-300" : ""} ${
+        scrolled ? "border-white/[.08] bg-ink/75 backdrop-blur-xl" : "border-transparent bg-transparent"
       }`}
     >
       {/* Fixed height on purpose: animating padding on a sticky (in-flow)
           header shifted the whole page 24px the moment you scrolled. Only the
-          background changes now. */}
-      <div className="shell flex h-[72px] items-center justify-between">
+          background changes now. The calculator's observer assumes 72px. */}
+      <div className="shell flex h-[72px] items-center justify-between gap-6">
         <Logo />
 
-        <nav className="hidden items-center gap-8 text-sm md:flex">
+        <nav aria-label="Main" className="hidden items-center gap-9 text-sm md:flex">
           {navLinks.map((link) => {
             const active = isActive(pathname, link.href);
             return (
-              <Link key={link.href} href={link.href} className="group relative py-1 rounded text-offwhite/90 transition hover:text-offwhite">
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={active ? "page" : undefined}
+                className={`group relative rounded py-2 font-medium transition-colors hover:text-offwhite ${active ? "text-offwhite" : "text-haze"}`}
+              >
                 {link.label}
                 <span
-                  className={`absolute left-0 -bottom-0.5 h-0.5 w-full origin-left bg-accent transition-transform duration-200 motion-reduce:transition-none ${
+                  className={`absolute -bottom-1 left-0 h-0.5 w-full origin-left rounded-full bg-accent shadow-[0_0_12px_rgba(31,182,255,.8)] transition-transform duration-200 motion-reduce:transition-none ${
                     active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
                   }`}
                 />
@@ -126,26 +138,27 @@ export default function Header() {
           })}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {isSupabaseConfigured && (
             user ? (
-              <div className="hidden items-center gap-3 sm:flex">
-                <Link href="/saved-estimates" className="rounded text-sm text-offwhite/60 hover:text-offwhite">
+              <div className="hidden items-center gap-4 sm:flex">
+                <Link href="/saved-estimates" className="rounded text-sm text-dusk hover:text-offwhite">
                   Hi, {firstName}
                 </Link>
-                <button type="button" onClick={signOut} className="rounded text-sm text-offwhite/80 hover:text-offwhite">
+                <button type="button" onClick={signOut} className="rounded text-sm text-haze hover:text-offwhite">
                   Sign out
                 </button>
               </div>
             ) : (
-              <Link href="/auth/sign-in" className="hidden rounded text-sm text-offwhite/80 hover:text-offwhite sm:block">
-                Sign in
+              <Link href="/auth/sign-in" className="hidden rounded text-sm font-medium text-haze hover:text-offwhite sm:block">
+                Log in
               </Link>
             )
           )}
           {!onCalculator && (
             <Link href="/calculator" className={`${button({ variant: "inverse", size: "md" })} hidden sm:inline-flex`}>
               Try the calculator
+              <ArrowRightIcon className="size-4" />
             </Link>
           )}
           <button
@@ -155,7 +168,7 @@ export default function Header() {
             aria-expanded={menu}
             aria-controls="mobile-menu"
             onClick={() => setMenu((v) => !v)}
-            className="grid size-11 place-items-center rounded-full border border-white/20 text-offwhite transition-colors hover:bg-white/10 md:hidden"
+            className="grid size-11 place-items-center rounded-full border border-white/20 bg-white/[.03] text-offwhite transition-colors hover:bg-white/10 md:hidden"
           >
             {menu ? <CloseIcon className="size-5" /> : <MenuIcon className="size-5" />}
           </button>
@@ -164,13 +177,17 @@ export default function Header() {
 
       {/* Full-screen mobile menu */}
       {menu && (
-        <div id="mobile-menu" className="fixed inset-0 z-40 flex flex-col bg-ink px-8 pt-28 pb-10 md:hidden motion-safe:animate-[fade-in_180ms_ease-out]">
-          <nav className="flex flex-1 flex-col justify-center gap-8">
+        <div
+          id="mobile-menu"
+          className="aurora fixed inset-0 z-40 flex flex-col bg-ink px-8 pb-10 pt-28 md:hidden motion-safe:animate-[fade-in_180ms_ease-out]"
+        >
+          <nav aria-label="Main" className="flex flex-1 flex-col justify-center gap-7">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`font-serif text-4xl tracking-[-.02em] ${isActive(pathname, link.href) ? "text-accent-light" : "text-offwhite"}`}
+                aria-current={isActive(pathname, link.href) ? "page" : undefined}
+                className={`type-headline ${isActive(pathname, link.href) ? "text-accent-light" : "text-offwhite"}`}
               >
                 {link.label}
               </Link>
@@ -178,16 +195,16 @@ export default function Header() {
             {isSupabaseConfigured && (
               user ? (
                 <>
-                  <Link href="/saved-estimates" className="font-serif text-4xl tracking-[-.02em] text-offwhite">
+                  <Link href="/saved-estimates" className="type-headline text-offwhite">
                     Saved estimates
                   </Link>
-                  <button type="button" onClick={signOut} className="text-left font-serif text-4xl tracking-[-.02em] text-offwhite">
+                  <button type="button" onClick={signOut} className="text-left type-headline text-offwhite">
                     Sign out
                   </button>
                 </>
               ) : (
-                <Link href="/auth/sign-in" className="font-serif text-4xl tracking-[-.02em] text-offwhite">
-                  Sign in
+                <Link href="/auth/sign-in" className="type-headline text-offwhite">
+                  Log in
                 </Link>
               )
             )}
@@ -195,6 +212,7 @@ export default function Header() {
           {!onCalculator && (
             <Link href="/calculator" className={button({ size: "lg", full: true })}>
               Try the calculator
+              <ArrowRightIcon className="size-4" />
             </Link>
           )}
         </div>

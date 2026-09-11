@@ -1,12 +1,13 @@
 import { ImageResponse } from "next/og";
-import { SPARK_PATH } from "../components/icons";
+import { STAR_PATH } from "../components/icons";
 
 export const runtime = "edge";
 export const size = { width: 32, height: 32 };
 export const contentType = "image/png";
 
-// Simplified brand mark — same spark used in the header, but as a filled shape
-// (not the detailed multi-stroke illustration) so it survives at favicon size.
+// The brand star on the midnight ground (no ring — it blurs at 32px). next/og
+// can't read Tailwind, so the brand colours are inline here (and in
+// opengraph-image.tsx) on purpose.
 export default function Icon() {
   return new ImageResponse(
     (
@@ -17,12 +18,12 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#00c7ef",
-          borderRadius: "50%",
+          background: "#05080f",
+          borderRadius: 8,
         }}
       >
-        <svg width="18" height="18" viewBox="0 0 72 72">
-          <path d={SPARK_PATH} fill="#0c0c1c" />
+        <svg width="28" height="28" viewBox="0 0 40 40">
+          <path d={STAR_PATH} fillRule="evenodd" fill="#e2bd6a" />
         </svg>
       </div>
     ),

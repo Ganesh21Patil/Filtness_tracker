@@ -7,11 +7,11 @@ import { createClient } from "../lib/supabase/client";
 import { isSupabaseConfigured } from "../lib/supabase/config";
 import { TAX_CONFIG, TaxInputs, TaxResults } from "../lib/calculator";
 import { button } from "./ui";
-import { CheckIcon, Spinner } from "./icons";
+import { BookmarkIcon, CheckIcon, Spinner } from "./icons";
 
 // Writes to the saved_estimates table (see supabase/schema.sql). Renders
-// nothing if Supabase isn't configured (see lib/supabase/config.ts). A quiet
-// tertiary action in the results panel, beside Print.
+// nothing if Supabase isn't configured (see lib/supabase/config.ts). Sits in
+// the results panel's header row.
 export default function SaveEstimateButton({ inputs, results }: { inputs: TaxInputs; results: TaxResults }) {
   const [user, setUser] = useState<User | null>(null);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -27,10 +27,13 @@ export default function SaveEstimateButton({ inputs, results }: { inputs: TaxInp
 
   if (!isSupabaseConfigured) return null;
 
+  const look = button({ variant: "secondary", size: "sm" });
+
   if (!user) {
     return (
-      <Link href="/auth/sign-in" className={button({ variant: "ghost", size: "sm" })}>
-        Sign in to save this estimate
+      <Link href="/auth/sign-in" className={look}>
+        <BookmarkIcon className="size-4" />
+        Sign in to save
       </Link>
     );
   }
@@ -49,12 +52,7 @@ export default function SaveEstimateButton({ inputs, results }: { inputs: TaxInp
   };
 
   return (
-    <button
-      type="button"
-      onClick={save}
-      disabled={status === "saving" || status === "saved"}
-      className={`${button({ variant: "ghost", size: "sm" })} disabled:opacity-100`}
-    >
+    <button type="button" onClick={save} disabled={status === "saving" || status === "saved"} className={`${look} disabled:opacity-100`}>
       {status === "saved" ? (
         <>
           <CheckIcon className="size-4 text-accent-light" strokeWidth={2.25} />
@@ -66,9 +64,12 @@ export default function SaveEstimateButton({ inputs, results }: { inputs: TaxInp
           Saving…
         </>
       ) : status === "error" ? (
-        "Couldn't save — try again"
+        "Couldn't save — retry"
       ) : (
-        "Save this estimate"
+        <>
+          <BookmarkIcon className="size-4" />
+          Save plan
+        </>
       )}
     </button>
   );

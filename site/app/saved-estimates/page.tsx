@@ -7,7 +7,8 @@ import { createClient } from "../../lib/supabase/client";
 import { isSupabaseConfigured } from "../../lib/supabase/config";
 import type { TaxResults } from "../../lib/calculator";
 import { button } from "../../components/ui";
-import PageHeader from "../../components/PageHeader";
+import { BookmarkIcon, TrashIcon } from "../../components/icons";
+import PageHeader, { PageBand } from "../../components/PageHeader";
 
 interface SavedEstimateRow {
   id: string;
@@ -58,49 +59,66 @@ export default function SavedEstimates() {
   };
 
   return (
-    <main className="flex-1 bg-ink px-4 pt-10 pb-16 sm:px-6 sm:pt-14 sm:pb-20">
-      <div className="mx-auto max-w-3xl">
-        <PageHeader eyebrow="Your account" title="Saved estimates" className="mb-10" />
+    <main className="flex-1 overflow-x-clip">
+      <PageBand>
+        <PageHeader eyebrow="Your account" title="Saved estimates" lede="Snapshots you chose to keep, frozen with the rules they were calculated under." />
+      </PageBand>
 
-        {user === undefined ? (
-          <LoadingRows label="Checking your account…" />
-        ) : user === null ? (
-          <div className="rounded-card bg-panel border border-white/10 p-8 text-center">
-            <p className="text-offwhite/80 mb-4">Sign in to see your saved estimates.</p>
-            <Link href="/auth/sign-in" className={button()}>Sign in</Link>
-          </div>
-        ) : estimates === null ? (
-          <LoadingRows label="Loading your estimates…" />
-        ) : estimates.length === 0 ? (
-          <div className="rounded-card bg-panel border border-white/10 p-8 text-center">
-            <p className="text-offwhite/80 mb-4">Nothing saved yet — run a calculation and click &quot;Save this estimate&quot; to keep it here.</p>
-            <Link href="/calculator" className={button()}>Go to the calculator</Link>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {estimates.map((e) => (
-              <div key={e.id} className="rounded-card bg-panel border border-white/10 p-6 flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-xs text-offwhite/50 mb-1">
-                    {new Date(e.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} &middot; {e.tax_year} tax year
-                  </p>
-                  <p className="font-serif text-2xl tabular-nums text-offwhite">{money(e.results.quarterlyPayment)}<span className="text-sm font-sans text-offwhite/50"> / quarter</span></p>
-                  <p className="text-sm text-offwhite/60 mt-1">{money(e.results.totalLiability)} total estimated liability</p>
+      <section className="pb-20 sm:pb-24">
+        <div className="shell max-w-3xl">
+          {user === undefined ? (
+            <LoadingRows label="Checking your account…" />
+          ) : user === null ? (
+            <EmptyCard text="Sign in to see your saved estimates." action={<Link href="/auth/sign-in" className={button({ size: "lg" })}>Log in</Link>} />
+          ) : estimates === null ? (
+            <LoadingRows label="Loading your estimates…" />
+          ) : estimates.length === 0 ? (
+            <EmptyCard
+              text="Nothing saved yet — run a calculation and click “Save plan” to keep it here."
+              action={<Link href="/calculator" className={button({ size: "lg" })}>Go to the calculator</Link>}
+            />
+          ) : (
+            <div className="space-y-4">
+              {estimates.map((e) => (
+                <div key={e.id} className="glass flex items-center justify-between gap-4 rounded-card p-6">
+                  <div>
+                    <p className="mb-1 text-xs text-fog">
+                      {new Date(e.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} &middot; {e.tax_year} tax year
+                    </p>
+                    <p className="type-figure text-3xl text-offwhite">
+                      {money(e.results.quarterlyPayment)}
+                      <span className="font-sans text-sm text-fog"> / quarter</span>
+                    </p>
+                    <p className="mt-1 text-sm text-dusk">{money(e.results.totalLiability)} total estimated liability</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => remove(e.id)}
+                    disabled={deletingId === e.id}
+                    className="inline-flex min-h-[44px] flex-shrink-0 items-center gap-1.5 rounded-full px-3 text-xs font-semibold text-danger transition-colors hover:bg-danger/10 disabled:opacity-50"
+                  >
+                    <TrashIcon className="size-4" />
+                    {deletingId === e.id ? "Deleting…" : "Delete"}
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => remove(e.id)}
-                  disabled={deletingId === e.id}
-                  className="text-xs font-semibold text-red-400 hover:text-red-300 disabled:opacity-50 flex-shrink-0"
-                >
-                  {deletingId === e.id ? "Deleting…" : "Delete"}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
     </main>
+  );
+}
+
+function EmptyCard({ text, action }: { text: string; action: React.ReactNode }) {
+  return (
+    <div className="glass rounded-card p-10 text-center">
+      <span className="mx-auto grid size-14 place-items-center rounded-full border border-electric-light/40 bg-electric/10 text-accent-light">
+        <BookmarkIcon className="size-6" />
+      </span>
+      <p className="mx-auto mt-5 max-w-sm text-haze">{text}</p>
+      <div className="mt-6">{action}</div>
+    </div>
   );
 }
 
@@ -111,7 +129,7 @@ function LoadingRows({ label }: { label: string }) {
     <div aria-busy="true" className="space-y-4">
       <span className="sr-only">{label}</span>
       {[0, 1, 2].map((i) => (
-        <div key={i} className="skeleton h-[116px] rounded-card" />
+        <div key={i} className="skeleton h-[124px] rounded-card" />
       ))}
     </div>
   );

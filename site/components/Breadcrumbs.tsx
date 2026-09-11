@@ -5,17 +5,12 @@ export type Crumb = { label: string; href?: string };
 
 /**
  * Where this page sits: ancestors are links, the last item is the current page
- * (aria-current). Replaces the old "← Back to calculator" link, which sent
- * every page — guides, privacy, terms — back to one assumed origin.
+ * (aria-current). Only used where a real parent exists.
  */
-export default function Breadcrumbs({ items, tone = "dark" }: { items: Crumb[]; tone?: "dark" | "light" }) {
-  const link = tone === "dark" ? "text-accent-light hover:text-offwhite" : "text-accent-deep hover:text-inktext";
-  const current = tone === "dark" ? "text-offwhite/70" : "text-inkmuted";
-  const separator = tone === "dark" ? "text-offwhite/40" : "text-inkmuted/70";
-
+export default function Breadcrumbs({ items, center = false }: { items: Crumb[]; center?: boolean }) {
   return (
     <nav aria-label="Breadcrumb" className="mb-3">
-      <ol className="flex flex-wrap items-center gap-x-1.5 text-sm">
+      <ol className={`flex flex-wrap items-center gap-x-1.5 text-sm ${center ? "justify-center" : ""}`}>
         {items.map((crumb, i) => {
           const last = i === items.length - 1;
           return (
@@ -23,16 +18,16 @@ export default function Breadcrumbs({ items, tone = "dark" }: { items: Crumb[]; 
               {crumb.href && !last ? (
                 <Link
                   href={crumb.href}
-                  className={`inline-flex min-h-[44px] items-center rounded font-semibold underline-offset-4 hover:underline ${link}`}
+                  className="inline-flex min-h-[44px] items-center rounded font-semibold text-accent-light underline-offset-4 hover:text-offwhite hover:underline"
                 >
                   {crumb.label}
                 </Link>
               ) : (
-                <span aria-current={last ? "page" : undefined} className={`truncate ${current}`}>
+                <span aria-current={last ? "page" : undefined} className="truncate text-dusk">
                   {crumb.label}
                 </span>
               )}
-              {!last && <ChevronRightIcon className={`size-3.5 flex-shrink-0 ${separator}`} />}
+              {!last && <ChevronRightIcon className="size-3.5 flex-shrink-0 text-fog" />}
             </li>
           );
         })}

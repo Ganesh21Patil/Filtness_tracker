@@ -9,53 +9,65 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // TrainerLedger brand system: dark navy/cream neutrals + one cyan accent.
-        // "accent" and "accent-deep" are the SAME hue at two weights — dark-bg vs
-        // light-bg — not two competing accent colors. Keep the palette to these
-        // named tokens; don't introduce ad-hoc hex values in components.
-        ink: '#0c0c1c',
-        ink2: '#15152a',
-        panel: '#17172c',
-        deep: '#25204f',
-        deep2: '#201b43',
-        deep3: '#2d2759',
-        cream: '#f5f2ed',
-        cream2: '#faf9f7', // quieter light surface for callouts inside white cards
-        offwhite: '#f6f5ff',
+        // TrainerLedger "midnight" system: a near-black navy ground, frosted
+        // glass surfaces, and blue light. Keep the palette to these named
+        // tokens; don't introduce ad-hoc hex values in components.
+        ink: "#05080f", // page ground
+        ink2: "#070c18", // quieter bands
+        panel: "#0a1122", // opaque surface (mobile bar, menus, selects)
+        deep: "#0d172e",
+        deep2: "#081022",
+        deep3: "#12203d",
+        offwhite: "#f4f7fc",
 
-        // Text on light surfaces — three steps, all AA on white and cream.
-        inktext: '#17162a', // headings, values
-        inksoft: '#413d57', // body copy (9.3:1 on cream)
-        inkmuted: '#66617a', // hints, captions (5.3:1 on cream — the floor for small text)
+        // Text on dark, below offwhite. All ≥4.5:1 on ink and on glass cards.
+        haze: "#c2cbe0", // secondary
+        dusk: "#9ba7c2", // tertiary — supporting copy, legends
+        fog: "#8491ae", // captions and meta
 
-        // Lines on light surfaces.
-        line: '#e5e1ec', // decorative hairlines and card borders
-        linestrong: '#8d88a1', // form-field boundaries: 3:1 on white and cream (WCAG 1.4.11)
-
-        // Text on dark surfaces, below offwhite.
-        haze: '#cac7e6', // secondary (9:1 on deep)
-        dusk: '#a7a2c8', // tertiary — disclaimers, captions (6.2:1 on deep)
+        // Form-field boundaries: 3:1 against glass and ink (WCAG 1.4.11).
+        // Decorative hairlines use white/10 instead.
+        edge: "#636e8a",
 
         accent: {
-          DEFAULT: '#00c7ef', // on dark backgrounds
-          light: '#70ddf6', // eyebrows and links on dark
-          deep: '#08647f', // on light backgrounds — same hue, WCAG AA safe on cream/white
-          soft: '#66d8f1', // second chart series only (federal tax), never text
+          DEFAULT: "#1fb6ff", // sky-cyan: hero CTAs, key figures, SE-tax series
+          light: "#7cd0ff", // eyebrows and links
+          soft: "#66c8ff",
         },
+        // Electric blue: the calculator's primary action and focus glow.
+        electric: {
+          DEFAULT: "#2a62ff",
+          light: "#4d86ff",
+          dark: "#1d48d9",
+        },
+        violet: "#6b5cff", // federal-tax series
+        gold: {
+          DEFAULT: "#d9b25f", // sparing premium highlight: logo, tips, warnings
+          light: "#f0d595",
+        },
+        danger: "#ff9b9b", // inline errors (7:1 on ink)
+      },
+      // The two in-between sizes the form uses, named instead of ad hoc.
+      fontSize: {
+        label: ["14px", { lineHeight: "1.35" }], // field labels and choice-card titles
+        field: ["17px", { lineHeight: "1.5" }], // text typed into money fields
       },
       // Four radii, by role. Buttons, chips and avatars stay rounded-full.
       borderRadius: {
-        card: '28px', // top-level surfaces: form, results panel, article cards
-        tile: '16px', // cards inside a surface: deduction tiles, guide cards, stat cards
-        control: '12px', // inputs, selects, callouts, tooltips, list rows
+        card: "28px", // top-level surfaces: form, results panel, article cards
+        tile: "18px", // cards inside a surface: deduction tiles, guide cards
+        control: "12px", // inputs, selects, callouts, tooltips, list rows
       },
       boxShadow: {
-        card: '0 18px 50px rgba(31,25,74,.1)', // cream/white cards on any ground
-        glow: '0 16px 40px rgba(0,199,239,.25)', // primary CTA hover
+        card: "0 30px 80px -30px rgba(0,0,0,.75)",
+        glow: "0 12px 40px -8px rgba(31,182,255,.55)", // cyan CTA hover
+        "glow-blue": "0 12px 40px -8px rgba(42,98,255,.7)", // electric CTA
       },
       fontFamily: {
-        sans: ['var(--font-sans)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        serif: ['var(--font-serif)', 'serif'],
+        sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+        serif: ["var(--font-serif)", "serif"],
+        condensed: ["var(--font-condensed)", "var(--font-sans)", "sans-serif"],
+        script: ["var(--font-script)", "cursive"],
       },
     },
   },

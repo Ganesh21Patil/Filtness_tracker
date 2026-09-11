@@ -1,6 +1,7 @@
 import Calculator from "../../../components/Calculator";
 import type { Metadata } from "next";
-import PageHeader from "../../../components/PageHeader";
+import PageHeader, { PageBand } from "../../../components/PageHeader";
+import summit from "../../../public/images/summit.jpg";
 
 export const metadata: Metadata = {
   title: "Personal Trainer Deduction Finder | TrainerLedger",
@@ -23,18 +24,19 @@ export default function DeductionFinderPage() {
       {/* eslint-disable-next-line react/no-danger */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
 
-      {/* A short intro band: the old one pushed the form ~630px down on a phone. */}
-      <section className="bg-ink px-6 pb-10 pt-8 sm:pb-14 sm:pt-12 lg:px-12">
+      <PageBand photo={summit}>
         <PageHeader
           align="center"
+          eyebrow="Free tool"
           title="Personal trainer deduction finder"
           lede="Certifications, liability insurance, gym rental splits, mileage, equipment, coaching software — most trainers miss at least one of these on their taxes. Walk through each category below and see roughly how much each one is worth in tax savings as you go."
         />
-      </section>
+      </PageBand>
 
-      <section className="bg-cream py-10 sm:py-16">
+      {/* Overlaps the photo band's faded bottom edge. */}
+      <section className="relative z-10 -mt-12 pb-16 sm:-mt-20 sm:pb-24">
         <div className="shell">
-          <Calculator />
+          <Calculator defaultDeductionsOpen />
         </div>
       </section>
     </main>
