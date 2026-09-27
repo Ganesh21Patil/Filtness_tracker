@@ -267,6 +267,20 @@ export const CodeIcon = (p: IconProps) => (
   </Stroke>
 );
 
+export const LogOutIcon = (p: IconProps) => (
+  <Stroke {...p}>
+    <path d="M14 4.5H6.5a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1H14" />
+    <path d="M10.5 12h10M17 8.5l3.5 3.5-3.5 3.5" />
+  </Stroke>
+);
+
+export const ChartIcon = (p: IconProps) => (
+  <Stroke {...p}>
+    <path d="M4 20.5h16" />
+    <path d="M7 17V11M12 17V6.5M17 17v-8" />
+  </Stroke>
+);
+
 /** Indeterminate spinner; stops spinning under prefers-reduced-motion. */
 export const Spinner = ({ className = "", ...p }: IconProps) => (
   <Stroke className={`motion-safe:animate-spin ${className}`} {...p}>

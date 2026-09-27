@@ -13,8 +13,11 @@ export const metadata: Metadata = {
 export default function Embed() {
   return (
     <main className="aurora min-h-screen flex-1 bg-ink px-4 py-6 sm:px-6 sm:py-8">
+      {/* The iframe is its own document, so it needs its own h1; the host
+          page's design shouldn't have to make room for a visible one. */}
+      <h1 className="sr-only">TrainerLedger tax calculator</h1>
       <Calculator embed />
-      <p className="mt-6 text-center text-xs text-dusk">
+      <p className="mt-6 text-center text-hint text-dusk">
         Powered by{" "}
         <Link href="/" target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] items-center font-semibold text-offwhite underline-offset-4 hover:underline">
           <Wordmark />

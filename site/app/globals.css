@@ -4,7 +4,8 @@
 
 @layer base {
   html {
-    @apply scroll-smooth;
+    /* Anchor jumps glide, except for people who asked for less motion. */
+    @apply motion-safe:scroll-smooth;
     color-scheme: dark; /* native selects, scrollbars and date pickers match */
     scrollbar-color: theme("colors.deep3") theme("colors.ink");
   }
@@ -69,9 +70,23 @@
     @apply mx-auto w-full max-w-[1376px] px-5 sm:px-6 lg:px-12;
   }
 
-  /* Small-caps section label. */
+  /* The homepage hero from xl up: copy column on the left, photo pinned
+     top-right, starting exactly where the copy column ends (shell edge +
+     36rem of copy + 2rem gap). The headline and the photo's card can then
+     never collide at any window width. The photo keeps its 3:2 frame (the
+     card sits on a fixed patch of it), and the section is at least as tall
+     as the photo. Below xl the photo stacks under the copy instead. */
+  @media (min-width: 1280px) {
+    .hero {
+      --media-left: calc(max(3rem, (100vw - 1376px) / 2 + 3rem) + 38rem);
+      min-height: max(660px, calc((100vw - var(--media-left)) * 2 / 3));
+    }
+  }
+
+  /* Small-caps section label. .14em reads as a label; wider tracking turned
+     every label into a row of loose letters. */
   .eyebrow {
-    @apply text-xs font-semibold uppercase tracking-[.2em];
+    @apply text-xs font-semibold uppercase tracking-[.14em];
   }
 
   /* Loading placeholder block; pulses only when motion is OK. */
@@ -85,7 +100,7 @@
   }
   .type-display {
     /* Section headings. */
-    @apply font-serif text-[2.5rem] leading-[1.02] tracking-[-.025em] md:text-[3.4rem];
+    @apply font-serif text-[2.5rem] leading-[1.02] tracking-[-.025em] md:text-[3.5rem];
   }
   .type-headline {
     /* Page titles (PageHeader, article H1s). */
@@ -100,11 +115,11 @@
     @apply font-serif tabular-nums tracking-[-.03em];
   }
 
-  /* Frosted glass: the one surface recipe. A faint white wash, a hairline
-     border, a lit top edge and a deep drop shadow. */
-  /* Both glass recipes sit on a translucent navy base, so text keeps its
-     contrast when a card floats over a photograph (the homepage calculator
-     sits over the summit photo), not only over the plain ground. */
+  /* Frosted glass: the one surface recipe. A faint white wash on a
+     translucent navy base (so text keeps its contrast over photographs), a
+     hairline border, a lit top edge and a deep drop shadow. No backdrop blur
+     here: these cards sit on the plain ground, where blur is invisible but
+     still costs a full repaint on every scroll. */
   .glass {
     background:
       linear-gradient(180deg, rgb(255 255 255 / 0.06), rgb(255 255 255 / 0.02)),
@@ -113,21 +128,20 @@
     box-shadow:
       inset 0 1px 0 0 rgb(255 255 255 / 0.07),
       0 30px 80px -30px rgb(0 0 0 / 0.8);
-    -webkit-backdrop-filter: blur(18px);
-    backdrop-filter: blur(18px);
   }
-  /* Key surfaces (calculator form, results) — the same glass, lit from the
-     edge with electric blue. */
+  /* Key surfaces (calculator form, results, sign-in) — the same glass, lit
+     from the edge with electric blue. These do float over photographs, so
+     they keep the blur. The edge light is the site's one sanctioned glow. */
   .glass-glow {
     background:
       radial-gradient(120% 60% at 50% 0%, rgb(42 98 255 / 0.1), transparent 60%),
       linear-gradient(180deg, rgb(255 255 255 / 0.06), rgb(255 255 255 / 0.02)),
       linear-gradient(rgb(8 13 26 / 0.8), rgb(8 13 26 / 0.8));
-    border: 1px solid rgb(110 160 255 / 0.3);
+    border: 1px solid rgb(110 160 255 / 0.22);
     box-shadow:
       inset 0 1px 0 0 rgb(255 255 255 / 0.1),
-      0 0 0 1px rgb(42 98 255 / 0.08),
-      0 0 70px -20px rgb(42 98 255 / 0.55),
+      0 0 0 1px rgb(42 98 255 / 0.06),
+      0 0 60px -24px rgb(42 98 255 / 0.32),
       0 40px 90px -30px rgb(0 0 0 / 0.85);
     -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
@@ -143,8 +157,8 @@
   /* One long diagonal beam of light. Position and angle are set per use. */
   .streak {
     @apply pointer-events-none absolute h-px;
-    background: linear-gradient(90deg, transparent, rgb(110 170 255 / 0.75) 45%, rgb(31 182 255 / 0.9) 55%, transparent);
-    box-shadow: 0 0 14px 1px rgb(42 98 255 / 0.45);
+    background: linear-gradient(90deg, transparent, rgb(110 170 255 / 0.6) 45%, rgb(31 182 255 / 0.7) 55%, transparent);
+    box-shadow: 0 0 8px 0 rgb(42 98 255 / 0.3);
   }
 
   /* Hairline section divider that glows in the middle. */
@@ -161,7 +175,6 @@
   .slogan::after {
     content: "";
     @apply mt-3 block h-1 w-12 rounded-full bg-accent;
-    box-shadow: 0 0 12px rgb(31 182 255 / 0.7);
   }
 
   /* Handwritten margin note. */
@@ -175,7 +188,7 @@
     @apply space-y-6 text-[1.0625rem] leading-relaxed text-haze;
   }
   .prose-dark h2 {
-    @apply mb-3 mt-2 font-serif text-2xl leading-tight tracking-[-.01em] text-offwhite sm:text-[1.7rem];
+    @apply mb-3 mt-2 font-serif text-2xl leading-tight tracking-[-.01em] text-offwhite;
   }
   .prose-dark strong {
     @apply font-semibold text-offwhite;
@@ -188,6 +201,43 @@
   }
   .prose-dark code {
     @apply rounded bg-white/10 px-1 text-offwhite;
+  }
+
+  /* Range slider in the brand's colours: a 6px track filled up to the thumb
+     (the element sets --fill), and an offwhite thumb ringed in accent. The
+     focus ring moves onto the thumb, where the eye already is. */
+  .range {
+    @apply cursor-pointer appearance-none bg-transparent;
+    --fill: 0%;
+  }
+  .range::-webkit-slider-runnable-track {
+    @apply h-1.5 rounded-full;
+    background: linear-gradient(to right, theme("colors.accent.DEFAULT") var(--fill), rgb(255 255 255 / 0.12) var(--fill));
+  }
+  .range::-moz-range-track {
+    @apply h-1.5 rounded-full;
+    background: rgb(255 255 255 / 0.12);
+  }
+  .range::-moz-range-progress {
+    @apply h-1.5 rounded-full bg-accent;
+  }
+  .range::-webkit-slider-thumb {
+    @apply -mt-2 box-border size-[22px] appearance-none rounded-full border-[3px] border-accent bg-offwhite;
+    box-shadow: 0 2px 10px rgb(0 0 0 / 0.5);
+    transition: box-shadow 150ms ease-out;
+  }
+  .range::-moz-range-thumb {
+    @apply box-border size-[22px] rounded-full border-[3px] border-accent bg-offwhite;
+    box-shadow: 0 2px 10px rgb(0 0 0 / 0.5);
+  }
+  .range:focus-visible {
+    outline: none;
+  }
+  .range:focus-visible::-webkit-slider-thumb {
+    box-shadow: 0 0 0 5px rgb(31 182 255 / 0.3), 0 2px 10px rgb(0 0 0 / 0.5);
+  }
+  .range:focus-visible::-moz-range-thumb {
+    box-shadow: 0 0 0 5px rgb(31 182 255 / 0.3), 0 2px 10px rgb(0 0 0 / 0.5);
   }
 
   /* One photo treatment for every photograph, so they read as one brand. */
@@ -205,78 +255,23 @@
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
-  .text-glow {
-    text-shadow: 0 0 40px rgb(124 208 255 / 0.35);
-  }
 }
 
-/* Used via Tailwind's motion-safe:animate-[fade-in_...] so it's automatically
-   a no-op under prefers-reduced-motion — no extra gating needed here. */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* One entrance for the whole results panel when an estimate first appears. */
-@keyframes results-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Brief replay of a value-update pop whenever a keyed metric node remounts.
-   Gated entirely inside the media query so it's a no-op under reduced motion. */
+/* Scroll reveal (see components/RevealObserver.tsx). Content marked
+   data-reveal fades up the first time it scrolls into view. Only elements
+   that start below the fold are ever marked pending, and only from script,
+   so nothing is hidden without JavaScript and nothing on screen at load
+   flickers. The transition is attached only for the reveal itself, then
+   removed, so an element's own hover transitions are untouched. */
 @media (prefers-reduced-motion: no-preference) {
-  @keyframes value-pop {
-    0% {
-      opacity: 0.5;
-      transform: translateY(3px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  [data-reveal-pending] {
+    opacity: 0;
+    translate: 0 24px;
   }
-  .value-pop {
-    animation: value-pop 220ms ease-out;
-  }
-}
-
-/* Decorative motion — the floating hero card and a slow shimmer on beams.
-   Both gated under reduced motion; the static state is the fallback. */
-@media (prefers-reduced-motion: no-preference) {
-  @keyframes float-card {
-    0%,
-    100% {
-      transform: translateY(0) rotate(-6deg);
-    }
-    50% {
-      transform: translateY(-10px) rotate(-5deg);
-    }
-  }
-  .animate-float-card {
-    animation: float-card 6s ease-in-out infinite;
-  }
-
-  @keyframes beam {
-    0%,
-    100% {
-      opacity: 0.55;
-    }
-    50% {
-      opacity: 1;
-    }
-  }
-  .animate-beam {
-    animation: beam 7s ease-in-out infinite;
+  [data-revealed] {
+    transition:
+      opacity 600ms cubic-bezier(0.22, 1, 0.36, 1),
+      translate 700ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0ms);
   }
 }

@@ -46,12 +46,21 @@ export default function EmbedSnippet() {
           <CodeIcon className="size-5" />
           Embed snippet
         </p>
-        <button type="button" onClick={copy} className={button({ variant: "electric", size: "sm" })}>
-          {status === "copied" && <CheckIcon className="size-4" strokeWidth={2.25} />}
+        <button type="button" onClick={copy} className={button({ size: "sm" })}>
+          {status === "copied" && <CheckIcon className="size-4 motion-safe:animate-pop-in" strokeWidth={2.25} />}
           {status === "copied" ? "Copied!" : status === "failed" ? "Select & copy manually" : "Copy snippet"}
         </button>
       </div>
-      <pre className="overflow-x-auto rounded-control border border-white/10 bg-ink/70 p-4 text-xs leading-relaxed text-haze">
+      <span role="status" className="sr-only">
+        {status === "copied" ? "Snippet copied to the clipboard." : status === "failed" ? "Couldn't copy. Select the code below and copy it manually." : ""}
+      </span>
+      {/* Focusable, so keyboard users can scroll the long line sideways. */}
+      <pre
+        tabIndex={0}
+        role="region"
+        aria-label="Embed snippet code"
+        className="overflow-x-auto rounded-control border border-white/10 bg-ink/70 p-4 text-xs leading-relaxed text-haze"
+      >
         <code>{snippet}</code>
       </pre>
     </div>

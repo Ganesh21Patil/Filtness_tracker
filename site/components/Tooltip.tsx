@@ -91,7 +91,7 @@ export default function Tooltip({
       <div
         id={id}
         hidden={!open}
-        className={`absolute z-50 mt-1 rounded-control border border-white/15 bg-panel/95 p-3.5 text-left text-sm font-normal normal-case leading-relaxed tracking-normal text-haze shadow-card backdrop-blur-xl motion-safe:animate-[fade-in_140ms_ease-out] ${position}`}
+        className={`absolute z-50 mt-1 rounded-control border border-white/15 bg-deep p-3.5 text-left text-sm font-normal normal-case leading-relaxed tracking-normal text-haze shadow-card motion-safe:animate-fade-in ${position}`}
       >
         {children}
       </div>

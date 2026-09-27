@@ -12,7 +12,7 @@ export const metadata = {
 export default function DashboardPage() {
   return (
     <main className="flex-1 overflow-x-clip">
-      <PageBand>
+      <PageBand width="max-w-6xl">
         {/* The dashboard is reached from the results panel, so its parent is the calculator. */}
         <PageHeader
           breadcrumbs={[{ label: "Calculator", href: "/calculator" }, { label: "Your breakdown" }]}

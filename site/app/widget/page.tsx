@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function Widget() {
   return (
     <main className="flex-1 overflow-x-clip">
-      <PageBand>
+      <PageBand width="max-w-4xl">
         <PageHeader
           eyebrow="For site owners"
           title="Embed this calculator on your site"

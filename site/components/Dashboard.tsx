@@ -5,9 +5,10 @@ import { useEffect, useMemo, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "../lib/supabase/client";
 import { isSupabaseConfigured } from "../lib/supabase/config";
-import { downloadQuarterlyIcs } from "../lib/ics";
+import CalendarButton from "./CalendarButton";
+import { dueIn, nextDueDate, startOfToday } from "../lib/dates";
 import { button } from "./ui";
-import { AlertIcon, CalendarIcon, ChevronDownIcon } from "./icons";
+import { AlertIcon, ChevronDownIcon } from "./icons";
 import {
   BLS_TRAINER_WAGES,
   TAX_CONFIG,
@@ -71,7 +72,7 @@ const CATEGORY_LABELS: Record<keyof TaxInputs["deductions"], string> = {
 function Card({ title, children, className = "", glow = false }: { title?: string; children: React.ReactNode; className?: string; glow?: boolean }) {
   return (
     <section className={`${glow ? "glass-glow" : "glass"} rounded-card p-6 sm:p-8 ${className}`}>
-      {title && <h2 className="mb-5 eyebrow text-accent-light">{title}</h2>}
+      {title && <h2 className="mb-5 text-lg font-semibold text-offwhite">{title}</h2>}
       {children}
     </section>
   );
@@ -111,6 +112,17 @@ export default function Dashboard() {
       .order("created_at", { ascending: false })
       .then(({ data }) => setSaved((data as unknown as SavedRow[]) ?? []));
   }, [user]);
+
+  // /dashboard?estimate=<id> — the "View breakdown" link on Saved estimates —
+  // opens that snapshot. An id that isn't one of yours falls back to this
+  // session once the list has loaded.
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("estimate");
+    if (id) setSourceId(id);
+  }, []);
+  useEffect(() => {
+    if (saved.length > 0 && sourceId !== "current" && !saved.some((s) => s.id === sourceId)) setSourceId("current");
+  }, [saved, sourceId]);
 
   const savedRow = saved.find((s) => s.id === sourceId);
   const isSavedView = !!savedRow;
@@ -211,10 +223,14 @@ export default function Dashboard() {
     return `Your ${money(trainingIncome)} is above the BLS 90th percentile of ${money(BLS_TRAINER_WAGES.PERCENTILE_90)}.`;
   };
 
-  const dues = quarterlyDueDates(isSavedView ? savedRow.tax_year : TAX_CONFIG.TAX_YEAR);
-  const today = new Date();
-  const nextDue = dues.find((d) => d.date > today);
+  // Same rule as the results panel (lib/dates.ts): a date is "next" all day.
+  const dueYear = isSavedView ? savedRow.tax_year : TAX_CONFIG.TAX_YEAR;
+  const dues = quarterlyDueDates(dueYear);
+  const today = startOfToday();
+  const nextDue = nextDueDate(dueYear);
 
+  const scenarioMax = Math.max(150000, Math.round(inputs.gross1099 * 2));
+  const scenarioValue = scenarioIncome ?? inputs.gross1099;
   const scenario =
     scenarioIncome === null || isSavedView
       ? null
@@ -224,7 +240,7 @@ export default function Dashboard() {
     // Two columns from lg: the headline and the income bar span the width,
     // then related cards pair up (benchmark | deductions, plan | what-if).
     // Rows stretch, so paired cards share a height and edges line up.
-    <div className="grid gap-5 lg:grid-cols-2 motion-safe:animate-[results-in_320ms_ease-out]">
+    <div className="grid gap-5 lg:grid-cols-2 motion-safe:animate-rise-in">
       {saved.length > 0 && (
         <div className="glass flex flex-wrap items-center gap-3 rounded-tile px-5 py-3 lg:col-span-2">
           <label htmlFor="estimate-source" className="eyebrow text-accent-light">
@@ -246,17 +262,16 @@ export default function Dashboard() {
             </select>
             <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-accent-light" />
           </div>
-          {isSavedView && <span className="text-xs text-fog">Frozen at save time, using {savedRow.tax_year} rules.</span>}
+          {isSavedView && <span className="text-hint text-fog">Frozen at save time, using {savedRow.tax_year} rules.</span>}
         </div>
       )}
 
       {/* 1. HEADLINE */}
       <Card glow className="relative overflow-hidden lg:col-span-2">
-        <div aria-hidden="true" className="pointer-events-none absolute -right-20 -top-24 size-72 rounded-full bg-electric/25 blur-3xl" />
         <div className="relative grid gap-8 sm:grid-cols-3">
           <div>
             <p className="eyebrow text-haze">Every quarter</p>
-            <p className="mt-2 type-figure text-glow text-6xl">{money(results.quarterlyPayment)}</p>
+            <p className="mt-2 type-figure text-6xl">{money(results.quarterlyPayment)}</p>
           </div>
           <div className="sm:border-l sm:border-white/[.08] sm:pl-8">
             <p className="eyebrow text-fog">Total tax for the year</p>
@@ -278,13 +293,13 @@ export default function Dashboard() {
           aria-label={segments.map((s) => `${s.label} ${pct(s.share)}`).join(", ")}
         >
           {segments.map((s) => (
-            <div key={s.label} className={`h-full ${s.className}`} style={{ width: `${s.share * 100}%` }} />
+            <div key={s.label} className={`h-full ${s.className} motion-safe:transition-[width] motion-safe:duration-500 motion-safe:ease-settle`} style={{ width: `${s.share * 100}%` }} />
           ))}
         </div>
         <dl className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {segments.map((s) => (
             <div key={s.label} className="rounded-control border border-white/[.08] bg-white/[.02] p-4">
-              <dt className="flex items-center gap-2 text-xs text-dusk">
+              <dt className="flex items-center gap-2 text-hint text-dusk">
                 <span aria-hidden="true" className={`size-2.5 flex-shrink-0 rounded-full ${s.className}`} />
                 {s.label}
               </dt>
@@ -308,7 +323,7 @@ export default function Dashboard() {
             {trainingIncome > 0 && (
               <span
                 aria-hidden="true"
-                className={`absolute -top-1 size-4 rounded-full border-2 border-ink bg-accent shadow-[0_0_12px_rgba(31,182,255,.9)] ${aboveScale ? "-translate-x-full" : "-translate-x-1/2"}`}
+                className={`absolute -top-1 size-4 rounded-full border-2 border-ink bg-accent ${aboveScale ? "-translate-x-full" : "-translate-x-1/2"}`}
                 style={{ left: markerPos(trainingIncome) }}
               />
             )}
@@ -336,12 +351,12 @@ export default function Dashboard() {
             })}
           </div>
           {aboveScale && (
-            <p className="text-xs text-fog">
+            <p className="text-hint text-fog">
               Your income is past the end of this scale, so the marker sits at the edge.
             </p>
           )}
         </div>
-        <p className="mt-6 flex gap-2 rounded-control border border-gold/30 bg-gold/[.07] p-3 text-xs leading-relaxed text-gold-light">
+        <p className="mt-6 flex gap-2 rounded-control border border-gold/30 bg-gold/[.07] p-3 text-hint leading-relaxed text-gold-light">
           <AlertIcon className="mt-px size-4 flex-shrink-0" />
           <span>
             Treat this as rough context, not a like-for-like comparison. BLS tracks <strong>employed</strong> trainers and
@@ -349,7 +364,7 @@ export default function Dashboard() {
             gross training income.
           </span>
         </p>
-        <p className="mt-3 text-xs text-dusk">
+        <p className="mt-3 text-hint text-dusk">
           Source: U.S. Bureau of Labor Statistics, Occupational Employment and Wage Statistics,{" "}
           {BLS_TRAINER_WAGES.REFERENCE}, SOC {BLS_TRAINER_WAGES.SOC_CODE}.{" "}
           <a href={BLS_TRAINER_WAGES.SOURCE_URL} target="_blank" rel="noopener noreferrer" className="underline hover:text-offwhite">
@@ -376,7 +391,7 @@ export default function Dashboard() {
                 <dt className="w-full flex-shrink-0 truncate text-haze sm:w-40">{c.label}</dt>
                 <dd className="flex flex-1 items-center gap-3">
                   <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/10">
-                    <span className="block h-full rounded-full bg-gradient-to-r from-accent to-electric-light" style={{ width: `${(c.value / topCategories[0].value) * 100}%` }} />
+                    <span className="block h-full rounded-full bg-accent/70 motion-safe:transition-[width] motion-safe:duration-500 motion-safe:ease-settle" style={{ width: `${(c.value / topCategories[0].value) * 100}%` }} />
                   </span>
                   <span className="w-20 text-right tabular-nums">{money(c.value)}</span>
                 </dd>
@@ -388,7 +403,7 @@ export default function Dashboard() {
         {untouched.length > 0 && (
           <div className="mt-6 border-t border-white/[.08] pt-5">
             <p className="text-sm font-semibold">Left at zero</p>
-            <p className="mt-1 text-xs text-fog">
+            <p className="mt-1 text-hint text-fog">
               We don&apos;t know what you actually spend, so these are prompts, not missed money.
             </p>
             <ul className="mt-3 space-y-2">
@@ -410,34 +425,30 @@ export default function Dashboard() {
         <ul className="space-y-2">
           {dues.map(({ label, date }) => {
             const isNext = nextDue?.label === label;
-            const passed = date <= today;
-            const days = Math.ceil((date.getTime() - today.getTime()) / 86400000);
+            const passed = date < today;
             return (
               <li
                 key={label}
                 className={`flex flex-wrap items-center justify-between gap-3 rounded-control border px-4 py-3 ${
-                  isNext ? "border-electric-light/50 bg-electric/[.1] shadow-[0_0_24px_-12px_rgba(42,98,255,.9)]" : "border-white/10 bg-white/[.02]"
+                  isNext ? "border-accent/40 bg-accent/[.07]" : "border-white/10 bg-white/[.02]"
                 }`}
               >
                 <span className="text-sm">
                   <span className="font-semibold">{date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}</span>
-                  {isNext && <span className="ml-2 text-xs font-semibold text-accent-light">next · in {days} {days === 1 ? "day" : "days"}</span>}
-                  {passed && <span className="ml-2 text-xs text-dusk">passed</span>}
+                  {isNext && nextDue && <span className="ml-2 text-hint font-semibold text-accent-light">next · {dueIn(nextDue.days)}</span>}
+                  {passed && <span className="ml-2 text-hint text-dusk">passed</span>}
                 </span>
                 <span className="tabular-nums font-semibold">{money(results.quarterlyPayment)}</span>
               </li>
             );
           })}
         </ul>
-        {!nextDue && <p className="mt-3 text-xs text-fog">All four dates for this tax year have passed.</p>}
-        <button
-          type="button"
-          onClick={() => downloadQuarterlyIcs(results.quarterlyPayment, isSavedView ? savedRow.tax_year : TAX_CONFIG.TAX_YEAR)}
-          className={`mt-5 ${button({ variant: "glow", size: "lg", full: true })}`}
-        >
-          <CalendarIcon className="size-5" />
-          Add due dates to calendar
-        </button>
+        {!nextDue && <p className="mt-3 text-hint text-fog">All four dates for this tax year have passed.</p>}
+        <CalendarButton
+          quarterlyPayment={results.quarterlyPayment}
+          year={isSavedView ? savedRow.tax_year : TAX_CONFIG.TAX_YEAR}
+          className="mt-5"
+        />
       </Card>
 
       {/* 6. WHAT IF */}
@@ -445,21 +456,23 @@ export default function Dashboard() {
         <Card title="What if you earned more?">
           <label htmlFor="scenario-income" className="block text-sm text-haze">
             Training income
-            <span className="ml-2 font-semibold tabular-nums text-offwhite">{money(scenarioIncome ?? inputs.gross1099)}</span>
+            <span className="ml-2 font-semibold tabular-nums text-offwhite">{money(scenarioValue)}</span>
           </label>
           <input
             id="scenario-income"
             type="range"
             min={0}
-            max={Math.max(150000, Math.round(inputs.gross1099 * 2))}
+            max={scenarioMax}
             step={1000}
-            value={scenarioIncome ?? inputs.gross1099}
+            value={scenarioValue}
             onChange={(e) => setScenarioIncome(Number(e.target.value))}
+            aria-valuetext={money(scenarioValue)}
             // h-11 keeps the drag target at 44px on touch; the track itself
-            // still renders at its natural height inside it.
-            className="mt-3 h-11 w-full cursor-pointer accent-accent"
+            // is drawn at 6px inside it. --fill paints the part left of the thumb.
+            className="range mt-3 h-11 w-full"
+            style={{ "--fill": `${(scenarioValue / scenarioMax) * 100}%` } as React.CSSProperties}
           />
-          <p className="mt-2 text-xs text-fog">Keeps your current deductions and filing status. One variable at a time.</p>
+          <p className="mt-2 text-hint text-fog">Keeps your current deductions and filing status. One variable at a time.</p>
 
           {scenario && (
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -468,7 +481,7 @@ export default function Dashboard() {
                 <p className="mt-1 type-figure text-2xl">{money(results.quarterlyPayment)}<span className="ml-1 font-sans text-sm text-fog">/qtr</span></p>
                 <p className="mt-1 text-xs text-fog">{money(results.totalLiability)} total · {pct(effectiveRate)}</p>
               </div>
-              <div className="rounded-control border border-electric-light/40 bg-electric/[.08] p-4">
+              <div className="rounded-control border border-accent/30 bg-accent/[.06] p-4">
                 <p className="eyebrow text-accent-light">If · {money(scenarioIncome ?? 0)}</p>
                 <p className="mt-1 type-figure text-2xl">{money(scenario.quarterlyPayment)}<span className="ml-1 font-sans text-sm text-fog">/qtr</span></p>
                 <p className="mt-1 text-xs text-fog">
@@ -481,7 +494,7 @@ export default function Dashboard() {
         </Card>
       )}
 
-      <p className="px-2 text-center text-xs leading-relaxed text-dusk lg:col-span-2">
+      <p className="px-2 text-center text-hint leading-relaxed text-dusk lg:col-span-2">
         For planning purposes only — not formal tax or legal advice.
       </p>
     </div>

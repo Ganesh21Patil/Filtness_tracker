@@ -25,6 +25,7 @@ export default function GuideCard({
   return (
     <Link
       href={href}
+      data-reveal
       className="glass group relative isolate flex h-full min-h-[300px] flex-col overflow-hidden rounded-tile p-6 transition-[border-color,transform] duration-200 hover:border-white/25 motion-safe:hover:-translate-y-0.5 sm:p-7"
     >
       {image && (
@@ -42,8 +43,8 @@ export default function GuideCard({
           <div className="absolute inset-0 bg-gradient-to-r from-ink/70 via-ink/10 to-transparent" />
         </div>
       )}
-      <span aria-hidden="true" className={`block h-0.5 w-7 rounded-full bg-accent shadow-[0_0_10px_rgba(31,182,255,.8)] ${image ? "mt-auto" : ""}`} />
-      <Heading className="mt-4 type-title text-offwhite sm:text-[1.65rem]">{title}</Heading>
+      <span aria-hidden="true" className={`block h-0.5 w-7 rounded-full bg-accent ${image ? "mt-auto" : ""}`} />
+      <Heading className="mt-4 type-title text-offwhite">{title}</Heading>
       <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-haze">{summary}</p>
       <span className={`inline-flex items-center gap-1.5 pt-5 text-sm font-semibold text-accent-light ${image ? "" : "mt-auto"}`}>
         Read guide

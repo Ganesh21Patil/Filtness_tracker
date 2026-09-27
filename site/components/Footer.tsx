@@ -77,22 +77,25 @@ export default function Footer() {
             <Image src={mountains} alt="" fill sizes="62vw" className="object-cover object-[35%_center] opacity-50 md:opacity-70" />
           </div>
           <div aria-hidden="true" className="absolute inset-0 bg-[radial-gradient(40%_70%_at_50%_50%,rgb(5_8_15/.85),transparent)]" />
-          <span aria-hidden="true" className="streak animate-beam -left-10 top-[30%] w-[40%] -rotate-[12deg]" />
+          <span aria-hidden="true" className="streak -left-10 top-[30%] hidden w-[40%] -rotate-[12deg] md:block" />
 
-          <p aria-hidden="true" className="slogan absolute bottom-16 left-[5%] hidden max-w-[11ch] xl:block">
-            Same hard work. Smarter finances.
-          </p>
-          <p aria-hidden="true" className="slogan absolute bottom-14 right-[5%] hidden max-w-[13ch] text-right xl:block [&::after]:ml-auto">
-            A stronger tomorrow starts with a clear plan.
-          </p>
+          {/* One hidden wrapper, not hidden paragraphs: styles inside a
+              display:none parent are never computed, so phones don't even
+              download the slogan font. */}
+          <div aria-hidden="true" className="hidden xl:block">
+            <p className="slogan absolute bottom-16 left-[5%] max-w-[11ch]">Same hard work. Smarter finances.</p>
+            <p className="slogan absolute bottom-14 right-[5%] max-w-[13ch] text-right [&::after]:ml-auto">
+              A stronger tomorrow starts with a clear plan.
+            </p>
+          </div>
 
-          <div className="shell relative py-20 text-center sm:py-24">
+          <div data-reveal className="shell relative py-20 text-center sm:py-24">
             <p className="eyebrow text-accent-light">Ready to take control?</p>
-            <h2 id="cta-heading" className="mx-auto mt-4 max-w-xl type-display">
+            <h2 id="cta-heading" className="mx-auto mt-5 max-w-xl type-display">
               Know what you owe. Keep moving forward.
             </h2>
-            <p className="mt-5 text-lg text-haze">Free, no signup — your numbers stay in your browser.</p>
-            <Link href="/calculator" className={`mt-9 ${button({ size: "lg" })}`}>
+            <p className="mt-6 text-lg text-haze">Free, no signup — your numbers stay in your browser.</p>
+            <Link href="/calculator" className={`mt-8 ${button({ size: "lg" })}`}>
               Calculate my taxes
               <ArrowRightIcon className="size-4" />
             </Link>
@@ -110,7 +113,9 @@ export default function Footer() {
 
             {columns.map((col) => (
               <div key={col.title}>
-                <h3 className="text-sm font-semibold text-offwhite">{col.title}</h3>
+                {/* h2: on pages without the CTA band (sign-in, saved estimates)
+                    these follow the page's h1 directly, and an h3 there skips a level. */}
+                <h2 className="text-sm font-semibold text-offwhite">{col.title}</h2>
                 <ul className="mt-2">
                   {col.links.map((link) => (
                     <li key={link.label}>

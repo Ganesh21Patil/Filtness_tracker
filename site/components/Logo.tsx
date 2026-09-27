@@ -12,7 +12,7 @@ export function LogoMark({ className = "size-9", ring = true }: { className?: st
       viewBox="0 0 40 40"
       aria-hidden="true"
       focusable="false"
-      className={`flex-shrink-0 overflow-visible drop-shadow-[0_0_10px_rgba(217,178,95,.45)] ${className}`}
+      className={`flex-shrink-0 overflow-visible ${className}`}
     >
       <defs>
         <linearGradient id={`${id}-face`} x1="0" y1="2" x2="0" y2="38" gradientUnits="userSpaceOnUse">
@@ -45,7 +45,7 @@ export function Wordmark({ className = "" }: { className?: string }) {
 /** Mark + wordmark, linking home. Used by the header, footer, and sign-in card. */
 export default function Logo({ className = "" }: { className?: string }) {
   return (
-    <Link href="/" className={`inline-flex items-center gap-2.5 rounded text-[1.35rem] font-semibold tracking-[-.02em] text-offwhite ${className}`}>
+    <Link href="/" className={`inline-flex items-center gap-2.5 rounded text-xl font-semibold tracking-[-.02em] text-offwhite ${className}`}>
       <LogoMark />
       <Wordmark />
     </Link>
