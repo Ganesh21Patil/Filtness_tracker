@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Breadcrumbs from "../../../components/Breadcrumbs";
+import ArticleShell from "../../../components/ArticleShell";
+import guideTrainer from "../../../public/images/guide-trainer.jpg";
 
 export const metadata: Metadata = {
   title: "Personal Trainer Tax Deductions Explained | TrainerLedger",
@@ -8,15 +9,13 @@ export const metadata: Metadata = {
 
 export default function GuideDeductions() {
   return (
-    <main className="flex-1 bg-ink px-4 pt-10 pb-16 sm:px-6 sm:pt-14 sm:pb-20">
-      <article className="max-w-3xl mx-auto bg-cream text-inktext p-6 sm:p-10 rounded-card shadow-card">
-        <Breadcrumbs tone="light" items={[{ label: "Guides", href: "/guides" }, { label: "Tax deductions" }]} />
-        <h1 className="font-serif text-4xl sm:text-5xl tracking-[-.03em] text-inktext mb-6">Personal Trainer Tax Deductions Explained</h1>
-        <div className="space-y-4 text-inksoft leading-relaxed">
-          <p>As a 1099 independent contractor, you only pay taxes on your <strong className="text-inktext">profit</strong>, not your gross revenue. Deductions lower your profit, which lowers your tax bill. Here are the most common deductions for fitness professionals.</p>
-          {/* Content abbreviated for stub */}
-        </div>
-      </article>
-    </main>
+    <ArticleShell
+      breadcrumbs={[{ label: "Guides", href: "/guides" }, { label: "Tax deductions" }]}
+      title="Personal trainer tax deductions explained"
+      image={guideTrainer}
+    >
+      <p>As a 1099 independent contractor, you only pay taxes on your <strong>profit</strong>, not your gross revenue. Deductions lower your profit, which lowers your tax bill. Here are the most common deductions for fitness professionals.</p>
+      {/* Content abbreviated for stub */}
+    </ArticleShell>
   );
 }

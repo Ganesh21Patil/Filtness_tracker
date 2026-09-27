@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { faqs } from "../lib/faqs";
+import { ChevronDownIcon } from "./icons";
 
 export default function Faq() {
   // First question open by default so the pattern is obvious; multiple can be open.
@@ -16,7 +17,7 @@ export default function Faq() {
     });
 
   return (
-    <div className="mt-12 divide-y divide-line border-y border-line">
+    <div className="glass divide-y divide-white/[.08] rounded-card px-5 sm:px-8">
       {faqs.map(([question, answer], i) => {
         const isOpen = open.has(i);
         const panelId = `faq-panel-${i}`;
@@ -30,19 +31,17 @@ export default function Faq() {
                 aria-expanded={isOpen}
                 aria-controls={panelId}
                 onClick={() => toggle(i)}
-                className="flex w-full items-center justify-between gap-4 py-5 text-left text-lg font-semibold text-inktext transition-colors hover:text-accent-deep rounded"
+                className="group flex w-full items-center justify-between gap-4 rounded py-5 text-left text-lg font-semibold text-offwhite transition-colors hover:text-accent-light"
               >
                 {question}
-                <svg
+                <span
                   aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  className={`size-5 flex-shrink-0 text-accent-deep motion-safe:transition-transform motion-safe:duration-200 ${isOpen ? "rotate-180" : ""}`}
+                  className={`grid size-8 flex-shrink-0 place-items-center rounded-full border transition-colors ${
+                    isOpen ? "border-accent/50 bg-accent/10 text-accent-light" : "border-white/15 text-dusk group-hover:text-accent-light"
+                  }`}
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                </svg>
+                  <ChevronDownIcon className={`size-4 motion-safe:transition-transform motion-safe:duration-200 ${isOpen ? "rotate-180" : ""}`} />
+                </span>
               </button>
             </h3>
             {/* 0fr -> 1fr grid rows animate to the content's natural height without
@@ -50,12 +49,14 @@ export default function Faq() {
                 answers leave the accessibility tree once the animation finishes. */}
             <div
               id={panelId}
+              role="region"
+              aria-labelledby={buttonId}
               className={`grid overflow-hidden motion-safe:transition-[grid-template-rows,visibility] motion-safe:duration-[220ms] motion-safe:ease-out ${
                 isOpen ? "visible grid-rows-[1fr]" : "invisible grid-rows-[0fr]"
               }`}
             >
               <div className="min-h-0">
-                <p className="pb-6 pr-8 leading-relaxed text-inksoft">{answer}</p>
+                <p className="pb-6 pr-10 leading-relaxed text-haze">{answer}</p>
               </div>
             </div>
           </div>
